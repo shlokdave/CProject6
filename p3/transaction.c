@@ -25,11 +25,11 @@
  */
 static unsigned long helperForSubtraction(unsigned long accountBalance, unsigned long subAmount)
 {
-    if (checkSub(accountBalance, subAmount))
-    {
-        return accountBalance - subAmount;
-    }
-    return accountBalance;
+  if (checkSub(accountBalance, subAmount))
+  {
+    return accountBalance - subAmount;
+  }
+  return accountBalance;
 }
 
 /**
@@ -42,11 +42,11 @@ static unsigned long helperForSubtraction(unsigned long accountBalance, unsigned
  */
 static unsigned long helperForAddition(unsigned long balance, unsigned long amount)
 {
-    if (checkAdd(balance, amount))
-    {
-        return balance + amount;
-    }
-    return balance;
+  if (checkAdd(balance, amount))
+  {
+    return balance + amount;
+  }
+  return balance;
 }
 
 /**
@@ -60,8 +60,8 @@ static unsigned long helperForAddition(unsigned long balance, unsigned long amou
  */
 static void helperForConversion(double conversionPrice, unsigned long long *conversionDollars, unsigned long long *conversionCents)
 {
-    *conversionDollars = (unsigned long long)conversionPrice;
-    *conversionCents = (unsigned long long)((conversionPrice - *conversionDollars) * 100 + 0.5);
+  *conversionDollars = (unsigned long long)conversionPrice;
+  *conversionCents = (unsigned long long)((conversionPrice - *conversionDollars) * 100 + 0.5);
 }
 
 /**
@@ -75,78 +75,78 @@ static void helperForConversion(double conversionPrice, unsigned long long *conv
 */
 void processTransactions(char fname[AFILE_LIMIT + 1])
 {
-    // Open the file to process transactions
-    FILE *filePointer = fopen(fname, "r");
+  // Open the file to process transactions
+  FILE *filePointer = fopen(fname, "r");
 
-    // Checks to see if the file can be opened or not
-    if (!filePointer)
+  // Checks to see if the file can be opened or not
+  if (!filePointer)
+  {
+    fprintf(stderr, "Can't open account file: %s\n", fname);
+    exit(EXIT_FAILURE);
+  }
+
+  char storeName[NAME_LIMIT + 1];
+  char storeOperand[5];
+  int storeQuantity;
+  double storePrice;
+
+  // Reads the file until the end of file, it gets the name, operand, quantity, and price for transaction
+  while (fscanf(filePointer, "%30s %4s %d %lf", storeName, storeOperand, &storeQuantity, &storePrice) != EOF)
+  {
+    unsigned long long dollars, cents;
+    helperForConversion(storePrice, &dollars, &cents);
+
+    // Checks for any overflow when converting the transaction
+    if (!checkMul(dollars * 100 + cents, storeQuantity))
     {
-        fprintf(stderr, "Can't open account file: %s\n", fname);
-        exit(EXIT_FAILURE);
+      fprintf(stderr, "Transaction overflow error\n");
+      exit(1);
+    }
+    unsigned long long storeTotal = (dollars * 100 + cents) * storeQuantity;
+    unsigned long long *storeBalance = (unsigned long long *)lookupAccount(storeName);
+
+    // Checks if the balance is valid or not
+    if (!storeBalance)
+    {
+      fprintf(stderr, "Invalid transaction file\n");
+      exit(1);
     }
 
-    char storeName[NAME_LIMIT + 1];
-    char storeOperand[5];
-    int storeQuantity;
-    double storePrice;
-
-    // Reads the file until the end of file, it gets the name, operand, quantity, and price for transaction
-    while (fscanf(filePointer, "%30s %4s %d %lf", storeName, storeOperand, &storeQuantity, &storePrice) != EOF)
+    // Checks if the balance is longer than the unsigned long max
+    if (*storeBalance > ULONG_MAX)
     {
-        unsigned long long dollars, cents;
-        helperForConversion(storePrice, &dollars, &cents);
-
-        // Checks for any overflow when converting the transaction
-        if (!checkMul(dollars * 100 + cents, storeQuantity))
-        {
-            fprintf(stderr, "Transaction overflow error\n");
-            exit(1);
-        }
-        unsigned long long storeTotal = (dollars * 100 + cents) * storeQuantity;
-        unsigned long long *storeBalance = (unsigned long long *)lookupAccount(storeName);
-
-        // Checks if the balance is valid or not
-        if (!storeBalance)
-        {
-            fprintf(stderr, "Invalid transaction file\n");
-            exit(1);
-        }
-
-        // Checks if the balance is longer than the unsigned long max
-        if (*storeBalance > ULONG_MAX)
-        {
-            fprintf(stderr, "Invalid account file\n");
-            exit(1);
-        }
-
-        // Transaction is processed for "buy" operand
-        if (strcmp(storeOperand, "buy") == 0)
-        {
-            if (*storeBalance < storeTotal)
-            {
-                fprintf(stderr, "Account overflow\n");
-                exit(1);
-            }
-            // Subtracts specific transaction amount
-            *storeBalance = helperForSubtraction(*storeBalance, storeTotal);
-        }
-
-        // Transaction is processed for "sell" operand
-        else if (strcmp(storeOperand, "sell") == 0)
-        {
-            if (*storeBalance == 0)
-            {
-                fprintf(stderr, "Account overflow\n");
-                exit(1);
-            }
-            if (!checkAdd(*storeBalance, storeTotal))
-            {
-                fprintf(stderr, "Account overflow\n");
-                exit(1);
-            }
-            // Adds specific transaction amount
-            *storeBalance = helperForAddition(*storeBalance, storeTotal);
-        }
+      fprintf(stderr, "Invalid account file\n");
+      exit(1);
     }
-    fclose(filePointer);
+
+    // Transaction is processed for "buy" operand
+    if (strcmp(storeOperand, "buy") == 0)
+    {
+      if (*storeBalance < storeTotal)
+      {
+        fprintf(stderr, "Account overflow\n");
+        exit(1);
+      }
+      // Subtracts specific transaction amount
+      *storeBalance = helperForSubtraction(*storeBalance, storeTotal);
+    }
+
+    // Transaction is processed for "sell" operand
+    else if (strcmp(storeOperand, "sell") == 0)
+    {
+      if (*storeBalance == 0)
+      {
+        fprintf(stderr, "Account overflow\n");
+        exit(1);
+      }
+      if (!checkAdd(*storeBalance, storeTotal))
+      {
+        fprintf(stderr, "Account overflow\n");
+        exit(1);
+      }
+      // Adds specific transaction amount
+      *storeBalance = helperForAddition(*storeBalance, storeTotal);
+    }
+  }
+  fclose(filePointer);
 }
