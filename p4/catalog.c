@@ -25,7 +25,7 @@
 /** Defines the maximum length of a line that can be processed by the program. */
 #define MAX_LENGTH_LINE 300
 
-/** Defines the growth multiplier for the maximum capacity of the park.*/
+/** Defines the growth multiplier for the maximum capacity of the park. */
 #define MAX_GROWTH_FACTOR 2
 
 /** Defines the radius of the Earth represented in miles. */
@@ -49,7 +49,7 @@ double distance(Park const *a, Park const *b)
                     sin(a->lon * DEGREE_TO_RADIAN) * cos(a->lat * DEGREE_TO_RADIAN),
                     sin(a->lat * DEGREE_TO_RADIAN)};
 
-  double park2[] = {cos(b->lon * DEGREE_TO_RADIAN) * cos(b->lat * M_PI / 180),
+  double park2[] = {cos(b->lon * DEGREE_TO_RADIAN) * cos(b->lat * DEGREE_TO_RADIAN),
                     sin(b->lon * DEGREE_TO_RADIAN) * cos(b->lat * DEGREE_TO_RADIAN),
                     sin(b->lat * DEGREE_TO_RADIAN)};
 

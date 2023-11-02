@@ -11,6 +11,12 @@
 
 #include <stdbool.h>
 
+/** Defines the maximum length for a name of a single park. */
+#define PARK_NAME_LENGTH 41
+
+/** Defines the maximum length for the numCounties array. */
+#define NUM_COUNTIES_LENGTH 101
+
 /**
   This structure is created to help hold all of the information about a single park. The struct
   contains all of the fields that relate to a park that could be added to the catalog. It is
@@ -28,10 +34,10 @@
 typedef struct
 {
   int id;
-  char name[41];
+  char name[PARK_NAME_LENGTH];
   double lat;
   double lon;
-  char numCounties[101];
+  char numCounties[NUM_COUNTIES_LENGTH];
 } Park;
 
 /**

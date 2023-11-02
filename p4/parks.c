@@ -17,14 +17,32 @@
 #include <string.h>
 #include <math.h>
 
+/** Maximum length for the name of a county to have. */
+#define MAX_COUNTIES_LENGTH 101
+
+/** Maximum length for the length of the command to have. */
+#define MAX_COMMAND_LENGTH 50
+
+/** Maximum amount of commands that can be executed in a line. */
+#define NUM_COMMANDS 2
+
+/** Number of characters that are compared in the input for the counties command. */
+#define NUM_COMPARE_COUNTIES 12
+
+/** Number of characters that are compared in the input for the add command. */
+#define NUM_COMPARE_ADD 4
+
+/** Number of characters that are compared in the input for the remove command. */
+#define NUM_COMPARE_REMOVE 7
+
 /** Static array used to store the park structure pointers while representing a trip of parks. */
-static Park *newTrip[100];
+static Park *newTrip[MAX_COUNTIES_LENGTH];
 
 /** Static variable represented as an integer to keep count of the total parks that are part of the trip. */
 static int countOfTrip = 0;
 
 /** Static variable represented as a string to hold the last command that is executed. */
-static char executeCurrentCommand[50];
+static char executeCurrentCommand[MAX_COMMAND_LENGTH];
 
 /**
   The function acts as a helper function to search the trip array for a park that is
@@ -96,7 +114,7 @@ static const char *addToTrip(Catalog *catalog, int id)
     if (catalog->parks[idx] != NULL && catalog->parks[idx]->id == id)
     {
       // Simple check to see if the trip has space in it
-      if (countOfTrip < 100)
+      if (countOfTrip < MAX_COUNTIES_LENGTH)
       {
         newTrip[countOfTrip] = catalog->parks[idx];
         countOfTrip++;
@@ -215,7 +233,7 @@ static bool checkParkInCounty(Park const *park, char const *name)
 int main(int argc, char *argv[])
 {
   // Simple check to see if the command-line arguments is less than 2
-  if (argc < 2)
+  if (argc < NUM_COMMANDS)
   {
     fprintf(stderr, "usage: parks <park-file>*\n");
     return 1;
@@ -268,19 +286,19 @@ int main(int argc, char *argv[])
     }
 
     // Condition to see if user input has the words "list county", while printing out contents
-    else if (strncmp(userInput, "list county ", 12) == 0)
+    else if (strncmp(userInput, "list county ", NUM_COMPARE_COUNTIES) == 0)
     {
       strcpy(executeCurrentCommand, userInput);
-      char *county = userInput + 12;
+      char *county = userInput + NUM_COMPARE_COUNTIES;
       printf("cmd> %s\nID  Name                                          Lat      Lon Counties\n", executeCurrentCommand);
       listParks(newCatalogObj, checkParkInCounty, county);
     }
 
     // Condition to see if user input has the words "add", while printing out contents
-    else if (strncmp(userInput, "add ", 4) == 0)
+    else if (strncmp(userInput, "add ", NUM_COMPARE_ADD) == 0)
     {
       strcpy(executeCurrentCommand, userInput);
-      char *addPark = userInput + 4;
+      char *addPark = userInput + NUM_COMPARE_ADD;
       int id = atoi(addPark);
 
       // Checks for the id of the park to be a suitable id
@@ -306,10 +324,10 @@ int main(int argc, char *argv[])
     }
 
     // Condition to see if user input has the words "remove", while printing out contents
-    else if (strncmp(userInput, "remove ", 7) == 0)
+    else if (strncmp(userInput, "remove ", NUM_COMPARE_REMOVE) == 0)
     {
       strcpy(executeCurrentCommand, userInput);
-      char *removePark = userInput + 7;
+      char *removePark = userInput + NUM_COMPARE_REMOVE;
       int id = atoi(removePark);
 
       // Checks for the id of the park to be a suitable id
