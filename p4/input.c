@@ -13,8 +13,14 @@
 #include <string.h>
 #include "input.h"
 
+/** Initial capacity that helps allocate for buffer. The value represents the starting size. */
 #define CAPACITY 50
+
+/** 100 is represented as the size of the temporary buffer that is used for reading the file. */
 #define BUFFER 100
+
+/** Represents the growth factor that is used for increasing the capacity of the buffer. */
+#define CAPACITY_ADD 2
 
 /**
   This is the only function that is part of the input component. The main
@@ -51,7 +57,7 @@ char *readLine(FILE *fp)
     {
       while (initalized_capacity <= lengthOfLine + newBuffArraryLen)
       {
-        initalized_capacity *= 2;
+        initalized_capacity *= CAPACITY_ADD;
       }
       char *newLineChar2 = (char *)realloc(newLineChar, initalized_capacity * sizeof(char));
 

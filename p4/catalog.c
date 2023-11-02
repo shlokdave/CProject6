@@ -16,6 +16,24 @@
 #include <ctype.h>
 #include <math.h>
 
+/** Defines the maximum capacity of one park representing the set limit of people. */
+#define MAX_CAP_PARK 5
+
+/** Defines the maximum number of counties that can be part of one park. */
+#define MAX_COUNTIES_IN_PARK 5
+
+/** Defines the maximum length of a line that can be processed by the program. */
+#define MAX_LENGTH_LINE 300
+
+/** Defines the growth multiplier for the maximum capacity of the park.*/
+#define MAX_GROWTH_FACTOR 2
+
+/** Defines the radius of the Earth represented in miles. */
+#define EARTH_RADIUS_MILES 3959
+
+/** Defines the multiplier for converting degrees to radians. */
+#define DEGREE_TO_RADIAN (M_PI / 180)
+
 /**
   This function is responsible for returning the distance in miles between two specific
   parks. The function computes the distance based on the park's global coordinates.
@@ -27,13 +45,13 @@
 double distance(Park const *a, Park const *b)
 {
   // Parks a and b are converted from degrees to radians, then converting them to Cartesian coordinates
-  double park1[] = {cos(a->lon * M_PI / 180) * cos(a->lat * M_PI / 180),
-                    sin(a->lon * M_PI / 180) * cos(a->lat * M_PI / 180),
-                    sin(a->lat * M_PI / 180)};
+  double park1[] = {cos(a->lon * DEGREE_TO_RADIAN) * cos(a->lat * DEGREE_TO_RADIAN),
+                    sin(a->lon * DEGREE_TO_RADIAN) * cos(a->lat * DEGREE_TO_RADIAN),
+                    sin(a->lat * DEGREE_TO_RADIAN)};
 
-  double park2[] = {cos(b->lon * M_PI / 180) * cos(b->lat * M_PI / 180),
-                    sin(b->lon * M_PI / 180) * cos(b->lat * M_PI / 180),
-                    sin(b->lat * M_PI / 180)};
+  double park2[] = {cos(b->lon * DEGREE_TO_RADIAN) * cos(b->lat * M_PI / 180),
+                    sin(b->lon * DEGREE_TO_RADIAN) * cos(b->lat * DEGREE_TO_RADIAN),
+                    sin(b->lat * DEGREE_TO_RADIAN)};
 
   // Dot product is initialized
   double dotProduct = 0.0;
@@ -46,7 +64,7 @@ double distance(Park const *a, Park const *b)
   double angleBetweenVectors = acos(dotProduct);
 
   // Returns the final distance between the two parks
-  return 3959 * angleBetweenVectors;
+  return EARTH_RADIUS_MILES * angleBetweenVectors;
 }
 
 /**
@@ -67,7 +85,7 @@ Catalog *makeCatalog()
     exit(1);
   }
 
-  newCatalogObject->parks = (Park **)malloc(5 * sizeof(Park *));
+  newCatalogObject->parks = (Park **)malloc(MAX_CAP_PARK * sizeof(Park *));
 
   // Checks if the memory allocation doesn't fail
   if (!newCatalogObject->parks)
@@ -78,7 +96,7 @@ Catalog *makeCatalog()
 
   // Sets the fields in the catalog struct to 0 and 5 respectively
   newCatalogObject->count = 0;
-  newCatalogObject->capacity = 5;
+  newCatalogObject->capacity = MAX_CAP_PARK;
 
   return newCatalogObject;
 }
@@ -200,7 +218,7 @@ static void checkEachLine(char *firstLine, char *secondLine, Park *park, const c
   int countOfCounty = countOfCommas + 1;
 
   // Error checking to see if the maximum number of counties is reached
-  if (countOfCounty > 5)
+  if (countOfCounty > MAX_CAP_PARK)
   {
     fprintf(stderr, "Invalid park file: %s\n", name);
     exit(1);
@@ -241,8 +259,8 @@ void readParks(char const *filename, Catalog *catalog)
   }
 
   // Character arrays that are used to store the first and second lines in the file
-  char firstLine[300];
-  char secondLine[300];
+  char firstLine[MAX_LENGTH_LINE];
+  char secondLine[MAX_LENGTH_LINE];
 
   // Loop used to read the file until the EOF
   while (fgets(firstLine, sizeof(firstLine), readFile))
@@ -287,7 +305,7 @@ void readParks(char const *filename, Catalog *catalog)
     // Field in park struct of capacity is increased if needed
     if (catalog->count >= catalog->capacity)
     {
-      catalog->capacity *= 2;
+      catalog->capacity *= MAX_GROWTH_FACTOR;
       Park **temp = realloc(catalog->parks, catalog->capacity * sizeof(Park *));
       if (!temp)
       {
