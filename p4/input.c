@@ -13,6 +13,9 @@
 #include <string.h>
 #include "input.h"
 
+#define CAPACITY 50
+#define BUFFER 100
+
 /**
   This is the only function that is part of the input component. The main
   responsibility of this function is to read a single input from the given input
@@ -26,9 +29,7 @@
 */
 char *readLine(FILE *fp)
 {
-  const int CAPACITY = 50;
-  const int NEW_BUFF = 100;
-  char newBuffArrary[NEW_BUFF];
+  char newBuffArrary[BUFFER];
   char *newLineChar = (char *)malloc(CAPACITY * sizeof(char));
   int initalized_capacity = CAPACITY;
   int lengthOfLine = 0;
@@ -41,7 +42,7 @@ char *readLine(FILE *fp)
   }
 
   // Reading the file until the end of it
-  while (fgets(newBuffArrary, NEW_BUFF, fp))
+  while (fgets(newBuffArrary, BUFFER, fp))
   {
     int newBuffArraryLen = strlen(newBuffArrary);
 
