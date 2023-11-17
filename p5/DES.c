@@ -152,7 +152,7 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
   permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
 
   // Loop to iterate through every round
-  for (int idx = 1; idx <= ROUND_COUNT; idx++)
+  for (int idx = 1; idx < ROUND_COUNT; idx++)
   {
     int encryptShift = subkeyShiftSchedule[idx];
 
@@ -201,7 +201,7 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
     permute(newKey, mainK, subkeyPerm, SUBKEY_BITS);
 
     memcpy(K[idx], newKey, (SUBKEY_BITS / BYTE_SIZE));
-  }
+  } // Old
 }
 
 /**
