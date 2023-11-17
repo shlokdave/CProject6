@@ -135,37 +135,45 @@ void permute(byte output[], byte const input[], int const perm[], int n)
   @param K the array of subkeys that will be stored in a different array.
   @param key the key that is used for the main encryption.
  */
+#include <stdio.h> // Make sure this is included for printf
+
 void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYTES])
 {
-    // New arrays to hold both halves
     byte Left[SUBKEY_HALF_BYTES], Right[SUBKEY_HALF_BYTES];
 
-    // Perform initial permutation with the main key
     permute(Left, key, leftSubkeyPerm, SUBKEY_HALF_BITS);
-    permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
+    printf("After initial permute, Left: ");
+    for (int i = 0; i < SUBKEY_HALF_BYTES; i++)
+    {
+        printf("%02x ", Left[i]);
+    }
+    printf("\n");
 
-    // Loop to go through each round using 1-based indexing
+    permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
+    printf("After initial permute, Right: ");
+    for (int i = 0; i < SUBKEY_HALF_BYTES; i++)
+    {
+        printf("%02x ", Right[i]);
+    }
+    printf("\n");
+
     for (int idx = 1; idx <= ROUND_COUNT; idx++)
     {
         int encryptShift = subkeyShiftSchedule[idx];
+        printf("Round %d, encryptShift: %d\n", idx, encryptShift);
 
-        // Shift process
         for (int idx1 = 0; idx1 < 2; idx1++)
         {
-            // Bit calculations for copying
             byte *newStoreBlock = (idx1 == 0) ? Right : Left;
             int tHalf = (SUBKEY_HALF_BITS + 7) / 8;
             byte tByte[SUBKEY_HALF_BYTES];
             memcpy(tByte, newStoreBlock, tHalf);
 
-            // Bit rotation occurs
             for (int idx2 = 0; idx2 < encryptShift; idx2++)
             {
                 for (int idx3 = SUBKEY_HALF_BITS; idx3 > 0; idx3--)
                 {
                     int getRequiredBit = getBit(newStoreBlock, idx3);
-
-                    // Rotate to the left
                     if (idx3 == 1)
                     {
                         putBit(tByte, SUBKEY_HALF_BITS, getRequiredBit);
@@ -175,30 +183,46 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
                         putBit(tByte, idx3 - 1, getRequiredBit);
                     }
                 }
-                // Rotated bits changed
                 memcpy(newStoreBlock, tByte, tHalf);
             }
+
+            printf("After shift %d, newStoreBlock: ", idx1);
+            for (int i = 0; i < tHalf; i++)
+            {
+                printf("%02x ", newStoreBlock[i]);
+            }
+            printf("\n");
         }
 
-        // Combining the rotation
         byte newSwapR[SUBKEY_HALF_BYTES], newSwapL[SUBKEY_HALF_BYTES];
         memcpy(newSwapR, Right, 4);
         memcpy(newSwapL, Left, 4);
         byte mainK[SUBKEY_BYTES];
 
-        // Combining both halves together using 1-based indexing
         for (int idx = 1; idx <= SUBKEY_HALF_BITS; idx++)
         {
             putBit(mainK, idx, getBit(newSwapL, idx));
             putBit(mainK, idx + SUBKEY_HALF_BITS, getBit(newSwapR, idx));
         }
 
-        // Perform permutations again
+        printf("After combining, mainK: ");
+        for (int i = 0; i < SUBKEY_BYTES; i++)
+        {
+            printf("%02x ", mainK[i]);
+        }
+        printf("\n");
+
         byte newKey[SUBKEY_BYTES];
         permute(newKey, mainK, subkeyPerm, SUBKEY_BITS);
 
-        // Storing new subkey
         memcpy(K[idx], newKey, (SUBKEY_BITS / BYTE_SIZE));
+
+        printf("Round %d subkey: ", idx);
+        for (int i = 0; i < SUBKEY_BYTES; i++)
+        {
+            printf("%02x ", K[idx][i]);
+        }
+        printf("\n");
     }
 }
 
