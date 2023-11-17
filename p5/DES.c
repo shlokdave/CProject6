@@ -143,7 +143,8 @@ void permute(byte output[], byte const input[], int const perm[], int n)
 
 void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYTES])
 {
-    byte Left[SUBKEY_HALF_BYTES], Right[SUBKEY_HALF_BYTES];
+    byte Left[SUBKEY_HALF_BYTES] = {0};
+    byte Right[SUBKEY_HALF_BYTES] = {0};
 
     permute(Left, key, leftSubkeyPerm, SUBKEY_HALF_BITS);
     printf("After initial permute, Left: ");
@@ -170,7 +171,7 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
         {
             byte *newStoreBlock = (idx1 == 0) ? Right : Left;
             int tHalf = (SUBKEY_HALF_BITS + (BYTE_SIZE - 1)) / BYTE_SIZE;
-            byte tByte[SUBKEY_HALF_BYTES];
+            byte tByte[SUBKEY_HALF_BYTES] = {0};
             memcpy(tByte, newStoreBlock, tHalf);
 
             for (int idx2 = 0; idx2 < encryptShift; idx2++)
@@ -198,10 +199,11 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
             printf("\n");
         }
 
-        byte newSwapR[SUBKEY_HALF_BYTES], newSwapL[SUBKEY_HALF_BYTES];
+        byte newSwapR[SUBKEY_HALF_BYTES] = {0};
+        byte newSwapL[SUBKEY_HALF_BYTES] = {0};
         memcpy(newSwapR, Right, SBOX_ROWS);
         memcpy(newSwapL, Left, SBOX_ROWS);
-        byte mainK[SUBKEY_BYTES];
+        byte mainK[SUBKEY_BYTES] = {0};
 
         for (int idx = 1; idx <= SUBKEY_HALF_BITS; idx++)
         {
@@ -216,7 +218,7 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
         }
         printf("\n");
 
-        byte newKey[SUBKEY_BYTES];
+        byte newKey[SUBKEY_BYTES] = {0};
         permute(newKey, mainK, subkeyPerm, SUBKEY_BITS);
 
         memcpy(K[idx], newKey, (SUBKEY_BITS / BYTE_SIZE));
