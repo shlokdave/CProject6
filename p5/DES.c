@@ -29,20 +29,20 @@
  */
 void prepareKey(byte key[BLOCK_BYTES], char const *textKey)
 {
-    int newIndex = 0;
+  int newIndex = 0;
 
-    // Loop to ensure current character is not null and the index is not more than the size
-    while (textKey[newIndex] != '\0' && newIndex < BLOCK_BYTES)
-    {
-        key[newIndex] = (byte)textKey[newIndex];
-        newIndex++;
-    }
+  // Loop to ensure current character is not null and the index is not more than the size
+  while (textKey[newIndex] != '\0' && newIndex < BLOCK_BYTES)
+  {
+    key[newIndex] = (byte)textKey[newIndex];
+    newIndex++;
+  }
 
-    // Loop pads the remaining of the array with 0's
-    while (newIndex < BLOCK_BYTES)
-    {
-        key[newIndex++] = 0;
-    }
+  // Loop pads the remaining of the array with 0's
+  while (newIndex < BLOCK_BYTES)
+  {
+    key[newIndex++] = 0;
+  }
 }
 
 /**
@@ -57,12 +57,12 @@ void prepareKey(byte key[BLOCK_BYTES], char const *textKey)
  */
 int getBit(byte const data[], int idx)
 {
-    // Directly compare the index of the byte with the position it is at
-    int indexByte = (idx - 1) / BYTE_SIZE;
-    int positionBit = (idx - 1) % BYTE_SIZE;
+  // Directly compare the index of the byte with the position it is at
+  int indexByte = (idx - 1) / BYTE_SIZE;
+  int positionBit = (idx - 1) % BYTE_SIZE;
 
-    // Get the bit using the single bitwise operation
-    return (data[indexByte] >> ((BYTE_SIZE - 1) - positionBit)) & 1;
+  // Get the bit using the single bitwise operation
+  return (data[indexByte] >> ((BYTE_SIZE - 1) - positionBit)) & 1;
 }
 
 /**
@@ -77,24 +77,24 @@ int getBit(byte const data[], int idx)
  */
 void putBit(byte data[], int idx, int val)
 {
-    // Directly comparing the index of the byte with its position
-    int indexByte = (idx - 1) / BYTE_SIZE;
-    int positionBit = (idx - 1) % BYTE_SIZE;
+  // Directly comparing the index of the byte with its position
+  int indexByte = (idx - 1) / BYTE_SIZE;
+  int positionBit = (idx - 1) % BYTE_SIZE;
 
-    // Mask created for the position of the bit
-    byte newMask = 1 << ((BYTE_SIZE - 1) - positionBit);
+  // Mask created for the position of the bit
+  byte newMask = 1 << ((BYTE_SIZE - 1) - positionBit);
 
-    // If statement to help check the value of val
-    if (!val)
-    {
-        // Bit is set using the AND operator
-        data[indexByte] &= ~newMask;
-    }
-    else
-    {
-        // Bit is set using the OR operator
-        data[indexByte] |= newMask;
-    }
+  // If statement to help check the value of val
+  if (!val)
+  {
+    // Bit is set using the AND operator
+    data[indexByte] &= ~newMask;
+  }
+  else
+  {
+    // Bit is set using the OR operator
+    data[indexByte] |= newMask;
+  }
 }
 
 /**
@@ -109,27 +109,27 @@ void putBit(byte data[], int idx, int val)
  */
 void permute(byte output[], byte const input[], int const perm[], int n)
 {
-    int calculateNumBytes = (n + (BYTE_SIZE - 1)) / BYTE_SIZE;
+  int calculateNumBytes = (n + (BYTE_SIZE - 1)) / BYTE_SIZE;
 
-    // Initialize output array to zero
-    for (int idx = 0; idx < calculateNumBytes; idx++)
-    {
-        output[idx] = 0;
-    }
+  // Initialize output array to zero
+  for (int idx = 0; idx < calculateNumBytes; idx++)
+  {
+    output[idx] = 0;
+  }
 
-    // Permutation logic
-    for (int idx = 0; idx < n; idx++)
-    {
-        int bitCopy = getBit(input, perm[idx]);
-        putBit(output, idx + 1, bitCopy);
-    }
+  // Permutation logic
+  for (int idx = 0; idx < n; idx++)
+  {
+    int bitCopy = getBit(input, perm[idx]);
+    putBit(output, idx + 1, bitCopy);
+  }
 
-    // Handle any leftover bits in the last byte if n is not a multiple of 8
-    if (n % 8 != 0)
-    {
-        byte newMask = (1 << (8 - n % 8)) - 1;
-        output[calculateNumBytes - 1] &= ~newMask;
-    }
+  // Handle any leftover bits in the last byte if n is not a multiple of 8
+  if (n % BYTE_SIZE != 0)
+  {
+    byte newMask = (1 << (BYTE_SIZE - n % BYTE_SIZE)) - 1;
+    output[calculateNumBytes - 1] &= ~newMask;
+  }
 }
 
 /**
@@ -143,58 +143,65 @@ void permute(byte output[], byte const input[], int const perm[], int n)
 
 void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYTES])
 {
-    byte Left[SUBKEY_HALF_BYTES] = {0};
-    byte Right[SUBKEY_HALF_BYTES] = {0};
+  // Declare new left and right halves of the array
+  byte Left[SUBKEY_HALF_BYTES] = {0};
+  byte Right[SUBKEY_HALF_BYTES] = {0};
 
-    permute(Left, key, leftSubkeyPerm, SUBKEY_HALF_BITS);
-    permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
+  // Perform initial permutations
+  permute(Left, key, leftSubkeyPerm, SUBKEY_HALF_BITS);
+  permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
 
-    for (int idx = 1; idx <= ROUND_COUNT; idx++)
+  // Loop to iterate through every round
+  for (int idx = 1; idx <= ROUND_COUNT; idx++)
+  {
+    int encryptShift = subkeyShiftSchedule[idx];
+
+    // Loop to handle shift
+    for (int idx1 = 0; idx1 < (SBOX_OUTPUT_BITS / HALF_SBOX); idx1++)
     {
-        int encryptShift = subkeyShiftSchedule[idx];
+      byte *newStoreBlock = (idx1 == 0) ? Right : Left;
+      int tHalf = (SUBKEY_HALF_BITS + (BYTE_SIZE - 1)) / BYTE_SIZE;
+      byte tByte[SUBKEY_HALF_BYTES] = {0};
+      memcpy(tByte, newStoreBlock, tHalf);
 
-        for (int idx1 = 0; idx1 < (SBOX_OUTPUT_BITS / 2); idx1++)
+      // Circular shift performed here
+      for (int idx2 = 0; idx2 < encryptShift; idx2++)
+      {
+        for (int idx3 = SUBKEY_HALF_BITS; idx3 > 0; idx3--)
         {
-            byte *newStoreBlock = (idx1 == 0) ? Right : Left;
-            int tHalf = (SUBKEY_HALF_BITS + (BYTE_SIZE - 1)) / BYTE_SIZE;
-            byte tByte[SUBKEY_HALF_BYTES] = {0};
-            memcpy(tByte, newStoreBlock, tHalf);
-
-            for (int idx2 = 0; idx2 < encryptShift; idx2++)
-            {
-                for (int idx3 = SUBKEY_HALF_BITS; idx3 > 0; idx3--)
-                {
-                    int getRequiredBit = getBit(newStoreBlock, idx3);
-                    if (idx3 == 1)
-                    {
-                        putBit(tByte, SUBKEY_HALF_BITS, getRequiredBit);
-                    }
-                    else
-                    {
-                        putBit(tByte, idx3 - 1, getRequiredBit);
-                    }
-                }
-                memcpy(newStoreBlock, tByte, tHalf);
-            }
+          int getRequiredBit = getBit(newStoreBlock, idx3);
+          if (idx3 == 1)
+          {
+            putBit(tByte, SUBKEY_HALF_BITS, getRequiredBit);
+          }
+          else
+          {
+            putBit(tByte, idx3 - 1, getRequiredBit);
+          }
         }
-
-        byte newSwapR[SUBKEY_HALF_BYTES] = {0};
-        byte newSwapL[SUBKEY_HALF_BYTES] = {0};
-        memcpy(newSwapR, Right, SBOX_ROWS);
-        memcpy(newSwapL, Left, SBOX_ROWS);
-        byte mainK[SUBKEY_BYTES] = {0};
-
-        for (int idx = 1; idx <= SUBKEY_HALF_BITS; idx++)
-        {
-            putBit(mainK, idx, getBit(newSwapL, idx));
-            putBit(mainK, idx + SUBKEY_HALF_BITS, getBit(newSwapR, idx));
-        }
-
-        byte newKey[SUBKEY_BYTES] = {0};
-        permute(newKey, mainK, subkeyPerm, SUBKEY_BITS);
-
-        memcpy(K[idx], newKey, (SUBKEY_BITS / BYTE_SIZE));
+        memcpy(newStoreBlock, tByte, tHalf);
+      }
     }
+
+    // Swapping the halves
+    byte newSwapR[SUBKEY_HALF_BYTES] = {0};
+    byte newSwapL[SUBKEY_HALF_BYTES] = {0};
+    memcpy(newSwapR, Right, SBOX_ROWS);
+    memcpy(newSwapL, Left, SBOX_ROWS);
+    byte mainK[SUBKEY_BYTES] = {0};
+
+    // Combine left and right
+    for (int idx = 1; idx <= SUBKEY_HALF_BITS; idx++)
+    {
+      putBit(mainK, idx, getBit(newSwapL, idx));
+      putBit(mainK, idx + SUBKEY_HALF_BITS, getBit(newSwapR, idx));
+    }
+
+    byte newKey[SUBKEY_BYTES] = {0};
+    permute(newKey, mainK, subkeyPerm, SUBKEY_BITS);
+
+    memcpy(K[idx], newKey, (SUBKEY_BITS / BYTE_SIZE));
+  }
 }
 
 /**
@@ -209,31 +216,31 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
  */
 void sBox(byte output[1], byte const input[SUBKEY_BYTES], int idx)
 {
-    // Initial declarations for calculating the starting position.
-    int positionBit = idx * SBOX_INPUT_BITS;
-    int bitsStored = 0;
+  // Initial declarations for calculating the starting position.
+  int positionBit = idx * SBOX_INPUT_BITS;
+  int bitsStored = 0;
 
-    // Extracting the bits and perform calculations
-    for (int idx = 0; idx < SBOX_INPUT_BITS; idx++)
-    {
-        int bitNum = (input[positionBit / SBOX_COUNT] >> ((BYTE_SIZE - 1) - (positionBit % SBOX_COUNT))) & 1;
-        bitsStored = (bitsStored << 1) | bitNum;
-        positionBit++;
-    }
+  // Extracting the bits and perform calculations
+  for (int idx = 0; idx < SBOX_INPUT_BITS; idx++)
+  {
+    int bitNum = (input[positionBit / SBOX_COUNT] >> ((BYTE_SIZE - 1) - (positionBit % SBOX_COUNT))) & 1;
+    bitsStored = (bitsStored << 1) | bitNum;
+    positionBit++;
+  }
 
-    // Perform calculations to figure out the row and column for table
-    int sBoxRow = (bitsStored & BLOCK_HALF_BITS) >> SBOX_ROWS | (bitsStored & 1);
-    int sBoxColumn = (bitsStored >> 1) & (SBOX_COLS - 1);
+  // Perform calculations to figure out the row and column for table
+  int sBoxRow = (bitsStored & BLOCK_HALF_BITS) >> SBOX_ROWS | (bitsStored & 1);
+  int sBoxColumn = (bitsStored >> 1) & (SBOX_COLS - 1);
 
-    // Extract the output from the table
-    byte getOutput = sBoxTable[idx][sBoxRow][sBoxColumn];
+  // Extract the output from the table
+  byte getOutput = sBoxTable[idx][sBoxRow][sBoxColumn];
 
-    // Final output stored
-    output[0] = 0;
-    for (int idx = 0; idx < SBOX_OUTPUT_BITS; idx++)
-    {
-        putBit(output, idx + 1, (getOutput >> (SBOX_OUTPUT_BITS - 1 - idx)) & 1);
-    }
+  // Final output stored
+  output[0] = 0;
+  for (int idx = 0; idx < SBOX_OUTPUT_BITS; idx++)
+  {
+    putBit(output, idx + 1, (getOutput >> (SBOX_OUTPUT_BITS - 1 - idx)) & 1);
+  }
 }
 
 /**
@@ -249,28 +256,28 @@ void sBox(byte output[1], byte const input[SUBKEY_BYTES], int idx)
  */
 void fFunction(byte result[BLOCK_HALF_BYTES], byte const R[BLOCK_HALF_BYTES], byte const K[SUBKEY_BYTES])
 {
-    // Expand using the expansion table
-    byte newBit[SUBKEY_BYTES];
-    permute(newBit, R, expandedRSelector, SUBKEY_BITS);
+  // Expand using the expansion table
+  byte newBit[SUBKEY_BYTES];
+  permute(newBit, R, expandedRSelector, SUBKEY_BITS);
 
-    // Mix the keys
-    byte mixKeys[SUBKEY_BYTES];
-    for (int idx = 0; idx < SUBKEY_BYTES; idx++)
-    {
-        mixKeys[idx] = newBit[idx] ^ K[idx];
-    }
+  // Mix the keys
+  byte mixKeys[SUBKEY_BYTES];
+  for (int idx = 0; idx < SUBKEY_BYTES; idx++)
+  {
+    mixKeys[idx] = newBit[idx] ^ K[idx];
+  }
 
-    // Perform substitution utilizing the S-boxes
-    byte subBox[SBOX_ROWS] = {0, 0, 0, 0};
-    for (int i = 0; i < BYTE_SIZE; i++)
-    {
-        byte newOutput[1];
-        sBox(newOutput, mixKeys, i);
-        subBox[i / (SBOX_ROWS / HALF_SBOX)] |= (i % (SBOX_ROWS / HALF_SBOX) == 0) ? newOutput[0] : (newOutput[0] >> SBOX_ROWS);
-    }
+  // Perform substitution utilizing the S-boxes
+  byte subBox[SBOX_ROWS] = {0, 0, 0, 0};
+  for (int i = 0; i < BYTE_SIZE; i++)
+  {
+    byte newOutput[1];
+    sBox(newOutput, mixKeys, i);
+    subBox[i / (SBOX_ROWS / HALF_SBOX)] |= (i % (SBOX_ROWS / HALF_SBOX) == 0) ? newOutput[0] : (newOutput[0] >> SBOX_ROWS);
+  }
 
-    // Perform final permutation with the substituted result
-    permute(result, subBox, fFunctionPerm, BLOCK_HALF_BITS);
+  // Perform final permutation with the substituted result
+  permute(result, subBox, fFunctionPerm, BLOCK_HALF_BITS);
 }
 
 /**
@@ -286,14 +293,14 @@ void fFunction(byte result[BLOCK_HALF_BYTES], byte const R[BLOCK_HALF_BYTES], by
  */
 static void helperEncryptBlock(byte Left[], byte Right[], const byte newOutput[], int arraySize)
 {
-    // Loop to go through each of the bytes in the arrays
-    for (int idx = 0; idx < arraySize; idx++)
-    {
-        // Stores the current byte from left, then swaps it to get the right
-        byte newSwap = Left[idx];
-        Left[idx] = Right[idx];
-        Right[idx] = newSwap ^ newOutput[idx];
-    }
+  // Loop to go through each of the bytes in the arrays
+  for (int idx = 0; idx < arraySize; idx++)
+  {
+    // Stores the current byte from left, then swaps it to get the right
+    byte newSwap = Left[idx];
+    Left[idx] = Right[idx];
+    Right[idx] = newSwap ^ newOutput[idx];
+  }
 }
 
 /**
@@ -308,29 +315,29 @@ static void helperEncryptBlock(byte Left[], byte Right[], const byte newOutput[]
  */
 void encryptBlock(DESBlock *block, byte const K[ROUND_COUNT][SUBKEY_BYTES])
 {
-    // Create a new block and perform the initial permutation
-    byte newBlock[BLOCK_BYTES];
-    permute(newBlock, block->data, leftInitialPerm, BLOCK_HALF_BITS);
-    permute(newBlock + BLOCK_HALF_BYTES, block->data, rightInitialPerm, BLOCK_HALF_BITS);
+  // Create a new block and perform the initial permutation
+  byte newBlock[BLOCK_BYTES];
+  permute(newBlock, block->data, leftInitialPerm, BLOCK_HALF_BITS);
+  permute(newBlock + BLOCK_HALF_BYTES, block->data, rightInitialPerm, BLOCK_HALF_BITS);
 
-    // Split the block of data into left and right halves
-    byte Left[BLOCK_HALF_BYTES], Right[BLOCK_HALF_BYTES];
-    memcpy(Left, newBlock, BLOCK_HALF_BYTES);
-    memcpy(Right, newBlock + BLOCK_HALF_BYTES, BLOCK_HALF_BYTES);
+  // Split the block of data into left and right halves
+  byte Left[BLOCK_HALF_BYTES], Right[BLOCK_HALF_BYTES];
+  memcpy(Left, newBlock, BLOCK_HALF_BYTES);
+  memcpy(Right, newBlock + BLOCK_HALF_BYTES, BLOCK_HALF_BYTES);
 
-    // Loop to process each piece of the data through all the necessary rounds
-    for (int idx = 1; idx < ROUND_COUNT; idx++)
-    {
-        byte newOutput[BLOCK_HALF_BYTES];
-        fFunction(newOutput, Right, K[idx]);
+  // Loop to process each piece of the data through all the necessary rounds
+  for (int idx = 1; idx < ROUND_COUNT; idx++)
+  {
+    byte newOutput[BLOCK_HALF_BYTES];
+    fFunction(newOutput, Right, K[idx]);
 
-        helperEncryptBlock(Left, Right, newOutput, BLOCK_HALF_BYTES);
-    }
+    helperEncryptBlock(Left, Right, newOutput, BLOCK_HALF_BYTES);
+  }
 
-    // Swap the left and right halves and perform final permutation
-    memcpy(newBlock, Right, BLOCK_HALF_BYTES);
-    memcpy(newBlock + BLOCK_HALF_BYTES, Left, BLOCK_HALF_BYTES);
-    permute(block->data, newBlock, finalPerm, BLOCK_BITS);
+  // Swap the left and right halves and perform final permutation
+  memcpy(newBlock, Right, BLOCK_HALF_BYTES);
+  memcpy(newBlock + BLOCK_HALF_BYTES, Left, BLOCK_HALF_BYTES);
+  permute(block->data, newBlock, finalPerm, BLOCK_BITS);
 }
 
 /**
@@ -344,15 +351,15 @@ void encryptBlock(DESBlock *block, byte const K[ROUND_COUNT][SUBKEY_BYTES])
  */
 void decryptBlock(DESBlock *block, byte const K[ROUND_COUNT][SUBKEY_BYTES])
 {
-    // Reverse order of the keys stored for decryption process
-    byte reversedSubkeys[ROUND_COUNT][SUBKEY_BYTES];
+  // Reverse order of the keys stored for decryption process
+  byte reversedSubkeys[ROUND_COUNT][SUBKEY_BYTES];
 
-    // Loop to help reverse the order of the keys
-    for (int round = 1; round <= ROUND_COUNT; round++)
-    {
-        memcpy(reversedSubkeys[round - 1], K[ROUND_COUNT - round + 1], SUBKEY_BYTES);
-    }
+  // Loop to help reverse the order of the keys
+  for (int round = 1; round <= ROUND_COUNT; round++)
+  {
+    memcpy(reversedSubkeys[round - 1], K[ROUND_COUNT - round + 1], SUBKEY_BYTES);
+  }
 
-    // Call the encryptBlock method with the reversed keys to simplify the process
-    encryptBlock(block, reversedSubkeys);
+  // Call the encryptBlock method with the reversed keys to simplify the process
+  encryptBlock(block, reversedSubkeys);
 }

@@ -38,59 +38,59 @@
  */
 int main(int argc, char *argv[])
 {
-    // Checking if the correct number of arguments are being passed
-    if (argc != EXPECTED_ARG_COUNT)
-    {
-        fprintf(stderr, "Usage: encrypt <key> <input_file> <output_file>\n");
-        return 1;
-    }
+  // Checking if the correct number of arguments are being passed
+  if (argc != EXPECTED_ARG_COUNT)
+  {
+    fprintf(stderr, "Usage: encrypt <key> <input_file> <output_file>\n");
+    return 1;
+  }
 
-    // Checking if the key is not too long
-    if (BYTE_SIZE < strlen(argv[1]))
-    {
-        fprintf(stderr, "Key too long\n");
-        return 1;
-    }
+  // Checking if the key is not too long
+  if (BYTE_SIZE < strlen(argv[1]))
+  {
+    fprintf(stderr, "Key too long\n");
+    return 1;
+  }
 
-    // Input file is opened in binary mode to read
-    FILE *firstInFile = fopen(argv[SECOND_ARG], "rb");
-    if (!firstInFile)
-    {
-        perror(argv[SECOND_ARG]);
-        return 1;
-    }
+  // Input file is opened in binary mode to read
+  FILE *firstInFile = fopen(argv[SECOND_ARG], "rb");
+  if (!firstInFile)
+  {
+    perror(argv[SECOND_ARG]);
+    return 1;
+  }
 
-    // Output file is opened in binary mode to write
-    FILE *firstOutFile = fopen(argv[THIRD_ARG], "wb");
-    if (!firstOutFile)
-    {
-        perror(argv[THIRD_ARG]);
-        fclose(firstInFile);
-        return 1;
-    }
-
-    // Initializing key and the subkeys
-    byte initKey[BLOCK_BYTES];
-    byte initSubKey[ROUND_COUNT][SUBKEY_BYTES];
-    prepareKey(initKey, argv[1]);
-    generateSubkeys(initSubKey, initKey);
-
-    // Initializing block to help process all of the data
-    DESBlock newDESBlock;
-    size_t readBit;
-
-    // While loop used to read the file by each block
-    while ((readBit = fread(newDESBlock.data, sizeof(byte), BLOCK_BYTES, firstInFile)))
-    {
-        memset(newDESBlock.data + readBit, 0, BLOCK_BYTES - readBit);
-        newDESBlock.len = BLOCK_BYTES;
-        encryptBlock(&newDESBlock, initSubKey);
-        writeBlock(firstOutFile, &newDESBlock);
-    }
-
-    // Closing each of the files
+  // Output file is opened in binary mode to write
+  FILE *firstOutFile = fopen(argv[THIRD_ARG], "wb");
+  if (!firstOutFile)
+  {
+    perror(argv[THIRD_ARG]);
     fclose(firstInFile);
-    fclose(firstOutFile);
+    return 1;
+  }
 
-    return 0;
+  // Initializing key and the subkeys
+  byte initKey[BLOCK_BYTES];
+  byte initSubKey[ROUND_COUNT][SUBKEY_BYTES];
+  prepareKey(initKey, argv[1]);
+  generateSubkeys(initSubKey, initKey);
+
+  // Initializing block to help process all of the data
+  DESBlock newDESBlock;
+  size_t readBit;
+
+  // While loop used to read the file by each block
+  while ((readBit = fread(newDESBlock.data, sizeof(byte), BLOCK_BYTES, firstInFile)))
+  {
+    memset(newDESBlock.data + readBit, 0, BLOCK_BYTES - readBit);
+    newDESBlock.len = BLOCK_BYTES;
+    encryptBlock(&newDESBlock, initSubKey);
+    writeBlock(firstOutFile, &newDESBlock);
+  }
+
+  // Closing each of the files
+  fclose(firstInFile);
+  fclose(firstOutFile);
+
+  return 0;
 }

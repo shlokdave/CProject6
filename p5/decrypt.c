@@ -39,81 +39,81 @@
  */
 int main(int argc, char *argv[])
 {
-    // Checking if the correct number of arguments are being passed
-    if (argc != EXPECTED_ARG_COUNT)
-    {
-        fprintf(stderr, "usage: decrypt <key> <input_file> <output_file>\n");
-        return 1;
-    }
+  // Checking if the correct number of arguments are being passed
+  if (argc != EXPECTED_ARG_COUNT)
+  {
+    fprintf(stderr, "usage: decrypt <key> <input_file> <output_file>\n");
+    return 1;
+  }
 
-    // Key length is checked if it is too long
-    if (BYTE_SIZE < strlen(argv[1]))
-    {
-        fprintf(stderr, "Key too long\n");
-        return 1;
-    }
+  // Key length is checked if it is too long
+  if (BYTE_SIZE < strlen(argv[1]))
+  {
+    fprintf(stderr, "Key too long\n");
+    return 1;
+  }
 
-    // Input file is opened in binary mode to read
-    FILE *firstInFile = fopen(argv[SECOND_ARG], "rb");
-    if (!firstInFile)
-    {
-        perror(argv[SECOND_ARG]);
-        fclose(firstInFile);
-        return 1;
-    }
-
-    // Output file is opened in binary mode to read
-    FILE *firstOutFile = fopen(argv[THIRD_ARG], "wb");
-    if (!firstOutFile)
-    {
-        perror(argv[THIRD_ARG]);
-        fclose(firstOutFile);
-        return 1;
-    }
-
-    // Initializing key and the subkeys
-    byte initKey[BLOCK_BYTES];
-    byte initSubKey[ROUND_COUNT][SUBKEY_BYTES];
-    prepareKey(initKey, argv[1]);
-    generateSubkeys(initSubKey, initKey);
-
-    // Initializing block to help process all of the data
-    DESBlock block;
-
-    // Processing blocks until the end of the file
-    while (1)
-    {
-        // Reads the block of data
-        readBlock(firstInFile, &block);
-        if (block.len == 0)
-        {
-            break;
-        }
-
-        // Decrypting the block using DES algorithm
-        decryptBlock(&block, initSubKey);
-        int value = 0;
-
-        // For loop to help remove the padding
-        for (int idx = block.len - 1; idx >= 0; idx--)
-        {
-            // Check to see the bytes
-            if (block.data[idx] == 0x00)
-            {
-                value++;
-            }
-            else
-            {
-                break;
-            }
-        }
-        block.len -= value;
-        writeBlock(firstOutFile, &block);
-    }
-
-    // Closing all of the files
+  // Input file is opened in binary mode to read
+  FILE *firstInFile = fopen(argv[SECOND_ARG], "rb");
+  if (!firstInFile)
+  {
+    perror(argv[SECOND_ARG]);
     fclose(firstInFile);
-    fclose(firstOutFile);
+    return 1;
+  }
 
-    return 0;
+  // Output file is opened in binary mode to read
+  FILE *firstOutFile = fopen(argv[THIRD_ARG], "wb");
+  if (!firstOutFile)
+  {
+    perror(argv[THIRD_ARG]);
+    fclose(firstOutFile);
+    return 1;
+  }
+
+  // Initializing key and the subkeys
+  byte initKey[BLOCK_BYTES];
+  byte initSubKey[ROUND_COUNT][SUBKEY_BYTES];
+  prepareKey(initKey, argv[1]);
+  generateSubkeys(initSubKey, initKey);
+
+  // Initializing block to help process all of the data
+  DESBlock block;
+
+  // Processing blocks until the end of the file
+  while (1)
+  {
+    // Reads the block of data
+    readBlock(firstInFile, &block);
+    if (block.len == 0)
+    {
+      break;
+    }
+
+    // Decrypting the block using DES algorithm
+    decryptBlock(&block, initSubKey);
+    int value = 0;
+
+    // For loop to help remove the padding
+    for (int idx = block.len - 1; idx >= 0; idx--)
+    {
+      // Check to see the bytes
+      if (block.data[idx] == 0x00)
+      {
+        value++;
+      }
+      else
+      {
+        break;
+      }
+    }
+    block.len -= value;
+    writeBlock(firstOutFile, &block);
+  }
+
+  // Closing all of the files
+  fclose(firstInFile);
+  fclose(firstOutFile);
+
+  return 0;
 }

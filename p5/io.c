@@ -25,46 +25,46 @@
  */
 void readBlock(FILE *fp, DESBlock *block)
 {
-    // Check if the file pointer or block pointer is null
-    if (fp == NULL || block == NULL)
+  // Check if the file pointer or block pointer is null
+  if (fp == NULL || block == NULL)
+  {
+    fprintf(stderr, "The file pointer or block is null.\n");
+    return;
+  }
+
+  // Reading the data from the file
+  size_t readingUsingBytes = fread(block->data, sizeof(byte), BLOCK_BYTES, fp);
+
+  // Checking number of bytes if they are less than BLOCK_BYTES
+  if (readingUsingBytes < BLOCK_BYTES)
+  {
+    // EOF check
+    if (feof(fp))
     {
-        fprintf(stderr, "The file pointer or block is null.\n");
-        return;
+      block->len = (int)readingUsingBytes;
+      return;
+    }
+    else if (ferror(fp))
+    {
+      block->len = 0;
+      return;
     }
 
-    // Reading the data from the file
-    size_t readingUsingBytes = fread(block->data, sizeof(byte), BLOCK_BYTES, fp);
+    // Calculates the padding value that is stored
+    byte calcPad = BLOCK_BYTES - (byte)readingUsingBytes;
 
-    // Checking number of bytes if they are less than BLOCK_BYTES
-    if (readingUsingBytes < BLOCK_BYTES)
+    // Loop to pad the rest of the block within the new pad value
+    for (size_t idx = readingUsingBytes; idx < BLOCK_BYTES; idx++)
     {
-        // EOF check
-        if (feof(fp))
-        {
-            block->len = (int)readingUsingBytes;
-            return;
-        }
-        else if (ferror(fp))
-        {
-            block->len = 0;
-            return;
-        }
-
-        // Calculates the padding value that is stored
-        byte calcPad = BLOCK_BYTES - (byte)readingUsingBytes;
-
-        // Loop to pad the rest of the block within the new pad value
-        for (size_t idx = readingUsingBytes; idx < BLOCK_BYTES; idx++)
-        {
-            block->data[idx] = calcPad;
-        }
-        block->len = BLOCK_BYTES;
+      block->data[idx] = calcPad;
     }
-    else
-    {
-        // Block length set to the number of bytes read
-        block->len = (int)readingUsingBytes;
-    }
+    block->len = BLOCK_BYTES;
+  }
+  else
+  {
+    // Block length set to the number of bytes read
+    block->len = (int)readingUsingBytes;
+  }
 }
 
 /**
@@ -80,19 +80,19 @@ void readBlock(FILE *fp, DESBlock *block)
   */
 void writeBlock(FILE *fp, DESBlock const *block)
 {
-    // Check if the file pointer or block pointer is null
-    if (fp == NULL || block == NULL)
-    {
-        fprintf(stderr, "The file pointer or block is null.\n");
-        return;
-    }
+  // Check if the file pointer or block pointer is null
+  if (fp == NULL || block == NULL)
+  {
+    fprintf(stderr, "The file pointer or block is null.\n");
+    return;
+  }
 
-    // Writing the data to the file
-    size_t writingUsingBytes = fwrite(block->data, sizeof(byte), block->len, fp);
+  // Writing the data to the file
+  size_t writingUsingBytes = fwrite(block->data, sizeof(byte), block->len, fp);
 
-    // Checking number of bytes
-    if (writingUsingBytes != block->len)
-    {
-        fprintf(stderr, "Error writing to the file.\n");
-    }
+  // Checking number of bytes
+  if (writingUsingBytes != block->len)
+  {
+    fprintf(stderr, "Error writing to the file.\n");
+  }
 }
