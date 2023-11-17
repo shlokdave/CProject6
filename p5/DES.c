@@ -103,23 +103,34 @@ void putBit(byte data[], int idx, int val)
  */
 void permute(byte output[], byte const input[], int const perm[], int n)
 {
-    // Number of bytes calculated
     int calculateNumBytes = (n + 7) / 8;
 
-    // Final array that is being declared
     for (int idx = 0; idx < calculateNumBytes; idx++)
     {
         output[idx] = 0;
     }
+    printf("Before permutation: ");
+    for (int i = 0; i < calculateNumBytes; i++)
+    {
+        printf("%02x ", input[i]);
+    }
+    printf("\n");
 
-    // Permutation starts by copying bits from input to output
+    // Permutation logic
     for (int idx = 0; idx < n; idx++)
     {
         int bitCopy = getBit(input, perm[idx]);
         putBit(output, idx + 1, bitCopy);
     }
 
-    // If statement to check if n is 8, sets remaining bits to 0
+    // Print the output array after permutation
+    printf("After permutation: ");
+    for (int i = 0; i < calculateNumBytes; i++)
+    {
+        printf("%02x ", output[i]);
+    }
+    printf("\n");
+
     if (n % 8 != 0)
     {
         byte newMask = (1 << (8 - n % 8)) - 1;
@@ -135,7 +146,6 @@ void permute(byte output[], byte const input[], int const perm[], int n)
   @param K the array of subkeys that will be stored in a different array.
   @param key the key that is used for the main encryption.
  */
-#include <stdio.h> // Make sure this is included for printf
 
 void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYTES])
 {
