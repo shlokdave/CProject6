@@ -11,6 +11,12 @@
 #include "DES.h"
 #include <stdio.h>
 
+/** SBOX value divided by 2*/
+#define HALF_SBOX 2
+
+/** SBOX input value divided by 2*/
+#define HALF_SBOX_INPUT 3
+
 /**
   This function checks the given text key to make sure that the key doesn't exceed
   the limit. This specific function copies the characters from the text key array into
@@ -76,7 +82,7 @@ void putBit(byte data[], int idx, int val)
     int positionBit = (idx - 1) % BYTE_SIZE;
 
     // Mask created for the position of the bit
-    byte newMask = 1 << (7 - positionBit);
+    byte newMask = 1 << ((BYTE_SIZE - 1) - positionBit);
 
     // If statement to help check the value of val
     if (!val)
@@ -131,9 +137,9 @@ void permute(byte output[], byte const input[], int const perm[], int n)
     }
     printf("\n");
 
-    if (n % 8 != 0)
+    if (n % BYTE_SIZE != 0)
     {
-        byte newMask = (1 << (8 - n % 8)) - 1;
+        byte newMask = (1 << (BYTE_SIZE - n % BYTE_SIZE)) - 1;
         output[calculateNumBytes - 1] &= ~newMask;
     }
 }
@@ -262,7 +268,7 @@ void sBox(byte output[1], byte const input[SUBKEY_BYTES], int idx)
 
     // Perform calculations to figure out the row and column for table
     int sBoxRow = (bitsStored & BLOCK_HALF_BITS) >> SBOX_ROWS | (bitsStored & 1);
-    int sBoxColumn = (bitsStored >> 1) & 0xF;
+    int sBoxColumn = (bitsStored >> 1) & (SBOX_COLS - 1);
 
     // Extract the output from the table
     byte getOutput = sBoxTable[idx][sBoxRow][sBoxColumn];
@@ -300,12 +306,12 @@ void fFunction(byte result[BLOCK_HALF_BYTES], byte const R[BLOCK_HALF_BYTES], by
     }
 
     // Perform substitution utilizing the S-boxes
-    byte subBox[4] = {0, 0, 0, 0};
+    byte subBox[SBOX_ROWS] = {0, 0, 0, 0};
     for (int i = 0; i < BYTE_SIZE; i++)
     {
         byte newOutput[1];
         sBox(newOutput, mixKeys, i);
-        subBox[i / (SBOX_ROWS / (SBOX_ROWS / 2))] |= (i % (SBOX_ROWS / (SBOX_ROWS / 2)) == 0) ? newOutput[0] : (newOutput[0] >> SBOX_ROWS);
+        subBox[i / (SBOX_ROWS / HALF_SBOX)] |= (i % (SBOX_ROWS / HALF_SBOX) == 0) ? newOutput[0] : (newOutput[0] >> SBOX_ROWS);
     }
 
     // Perform final permutation with the substituted result

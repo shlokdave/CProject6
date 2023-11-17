@@ -16,6 +16,12 @@
 /** Expected argument count for the main function */
 #define EXPECTED_ARG_COUNT 4
 
+/** Second command-line argument*/
+#define SECOND_ARG 2
+
+/** Third command-line argument*/
+#define THIRD_ARG 3
+
 /**
   This function acts as the main program for the encryption process using DES. The program
   takes in three command-line arguments and encrypts the contents of the input file
@@ -47,18 +53,18 @@ int main(int argc, char *argv[])
     }
 
     // Input file is opened in binary mode to read
-    FILE *firstInFile = fopen(argv[(SBOX_INPUT_BITS / 3)], "rb");
+    FILE *firstInFile = fopen(argv[SECOND_ARG], "rb");
     if (!firstInFile)
     {
-        perror(argv[(SBOX_INPUT_BITS / 3)]);
+        perror(argv[SECOND_ARG]);
         return 1;
     }
 
     // Output file is opened in binary mode to write
-    FILE *firstOutFile = fopen(argv[(SBOX_INPUT_BITS / 2)], "wb");
+    FILE *firstOutFile = fopen(argv[THIRD_ARG], "wb");
     if (!firstOutFile)
     {
-        perror(argv[(SBOX_INPUT_BITS / 2)]);
+        perror(argv[THIRD_ARG]);
         fclose(firstInFile);
         return 1;
     }
