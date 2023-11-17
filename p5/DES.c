@@ -212,7 +212,7 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
   @param idx the index that the S-Box calculation will use and this number ranges from
   zero to seven.
  */
-void sBox(byte output[1], byte const input[], int idx)
+void sBox(byte output[1], byte const input[SUBKEY_BYTES], int idx)
 {
     // Initial declarations for calculating the starting position.
     int positionBit = idx * SBOX_INPUT_BITS;
