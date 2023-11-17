@@ -143,28 +143,38 @@ void permute(byte output[], byte const input[], int const perm[], int n)
 
 void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYTES])
 {
-  // Declare new left and right halves of the array
   byte Left[SUBKEY_HALF_BYTES] = {0};
   byte Right[SUBKEY_HALF_BYTES] = {0};
 
-  // Perform initial permutations
   permute(Left, key, leftSubkeyPerm, SUBKEY_HALF_BITS);
-  permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
-
-  // Loop to iterate through every round
-  for (int idx = 1; idx < ROUND_COUNT; idx++)
+  printf("Left after permutation: ");
+  for (int i = 0; i < SUBKEY_HALF_BYTES; i++)
   {
-    int encryptShift = subkeyShiftSchedule[idx];
+    printf("%02x ", Left[i]);
+  }
+  printf("\n");
 
-    // Loop to handle shift
-    for (int idx1 = 0; idx1 < (SBOX_OUTPUT_BITS / HALF_SBOX); idx1++)
+  permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
+  printf("Right after permutation: ");
+  for (int i = 0; i < SUBKEY_HALF_BYTES; i++)
+  {
+    printf("%02x ", Right[i]);
+  }
+  printf("\n");
+
+  for (int idx = 1; idx <= ROUND_COUNT; idx++)
+  {
+    printf("Round: %d\n", idx);
+    int encryptShift = subkeyShiftSchedule[idx];
+    printf("Encrypt Shift: %d\n", encryptShift);
+
+    for (int idx1 = 0; idx1 < (SBOX_OUTPUT_BITS / 2); idx1++)
     {
       byte *newStoreBlock = (idx1 == 0) ? Right : Left;
       int tHalf = (SUBKEY_HALF_BITS + (BYTE_SIZE - 1)) / BYTE_SIZE;
       byte tByte[SUBKEY_HALF_BYTES] = {0};
       memcpy(tByte, newStoreBlock, tHalf);
 
-      // Circular shift performed here
       for (int idx2 = 0; idx2 < encryptShift; idx2++)
       {
         for (int idx3 = SUBKEY_HALF_BITS; idx3 > 0; idx3--)
@@ -181,27 +191,45 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
         }
         memcpy(newStoreBlock, tByte, tHalf);
       }
+
+      printf("New Store Block after shift %d: ", idx1);
+      for (int i = 0; i < tHalf; i++)
+      {
+        printf("%02x ", newStoreBlock[i]);
+      }
+      printf("\n");
     }
 
-    // Swapping the halves
     byte newSwapR[SUBKEY_HALF_BYTES] = {0};
     byte newSwapL[SUBKEY_HALF_BYTES] = {0};
     memcpy(newSwapR, Right, SBOX_ROWS);
     memcpy(newSwapL, Left, SBOX_ROWS);
     byte mainK[SUBKEY_BYTES] = {0};
 
-    // Combine left and right
     for (int idx = 1; idx <= SUBKEY_HALF_BITS; idx++)
     {
       putBit(mainK, idx, getBit(newSwapL, idx));
       putBit(mainK, idx + SUBKEY_HALF_BITS, getBit(newSwapR, idx));
     }
 
+    printf("Combined MainK: ");
+    for (int i = 0; i < SUBKEY_BYTES; i++)
+    {
+      printf("%02x ", mainK[i]);
+    }
+    printf("\n");
+
     byte newKey[SUBKEY_BYTES] = {0};
     permute(newKey, mainK, subkeyPerm, SUBKEY_BITS);
-
     memcpy(K[idx], newKey, (SUBKEY_BITS / BYTE_SIZE));
-  } // Old
+
+    printf("Round %d subkey: ", idx);
+    for (int i = 0; i < SUBKEY_BYTES; i++)
+    {
+      printf("%02x ", K[idx][i]);
+    }
+    printf("\n");
+  }
 }
 
 /**
