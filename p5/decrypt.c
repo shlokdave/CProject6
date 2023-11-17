@@ -28,10 +28,14 @@
   of the decryption process. These errors could include key length being too large or
   the file is not opened in the proper format.
  */
+
+/** Expected argument count for the main function */
+#define EXPECTED_ARG_COUNT 4
+
 int main(int argc, char *argv[])
 {
     // Checking if the correct number of arguments are being passed
-    if (argc != 4)
+    if (argc != EXPECTED_ARG_COUNT)
     {
         fprintf(stderr, "usage: decrypt <key> <input_file> <output_file>\n");
         return 1;
