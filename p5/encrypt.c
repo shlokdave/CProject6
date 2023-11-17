@@ -13,6 +13,9 @@
 #include <string.h>
 #include "io.h"
 
+/** Expected argument count for the main function */
+#define EXPECTED_ARG_COUNT 4
+
 /**
   This function acts as the main program for the encryption process using DES. The program
   takes in three command-line arguments and encrypts the contents of the input file
@@ -30,7 +33,7 @@
 int main(int argc, char *argv[])
 {
     // Checking if the correct number of arguments are being passed
-    if (argc != 4)
+    if (argc != EXPECTED_ARG_COUNT)
     {
         fprintf(stderr, "Usage: encrypt <key> <input_file> <output_file>\n");
         return 1;
@@ -44,18 +47,18 @@ int main(int argc, char *argv[])
     }
 
     // Input file is opened in binary mode to read
-    FILE *firstInFile = fopen(argv[2], "rb");
+    FILE *firstInFile = fopen(argv[(SBOX_INPUT_BITS / 3)], "rb");
     if (!firstInFile)
     {
-        perror(argv[2]);
+        perror(argv[(SBOX_INPUT_BITS / 3)]);
         return 1;
     }
 
     // Output file is opened in binary mode to write
-    FILE *firstOutFile = fopen(argv[3], "wb");
+    FILE *firstOutFile = fopen(argv[(SBOX_INPUT_BITS / 2)], "wb");
     if (!firstOutFile)
     {
-        perror(argv[3]);
+        perror(argv[(SBOX_INPUT_BITS / 2)]);
         fclose(firstInFile);
         return 1;
     }

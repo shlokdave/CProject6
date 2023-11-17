@@ -13,6 +13,9 @@
 #include <string.h>
 #include "io.h"
 
+/** Expected argument count for the main function */
+#define EXPECTED_ARG_COUNT 4
+
 /**
   This function acts as the main program for the decryption process using DES. The program
   takes in three command-line arguments and decrypts the contents of the input file
@@ -28,10 +31,6 @@
   of the decryption process. These errors could include key length being too large or
   the file is not opened in the proper format.
  */
-
-/** Expected argument count for the main function */
-#define EXPECTED_ARG_COUNT 4
-
 int main(int argc, char *argv[])
 {
     // Checking if the correct number of arguments are being passed
@@ -49,19 +48,19 @@ int main(int argc, char *argv[])
     }
 
     // Input file is opened in binary mode to read
-    FILE *firstInFile = fopen(argv[2], "rb");
+    FILE *firstInFile = fopen(argv[(SBOX_INPUT_BITS / 3)], "rb");
     if (!firstInFile)
     {
-        perror(argv[2]);
+        perror(argv[(SBOX_INPUT_BITS / 3)]);
         fclose(firstInFile);
         return 1;
     }
 
     // Output file is opened in binary mode to read
-    FILE *firstOutFile = fopen(argv[3], "wb");
+    FILE *firstOutFile = fopen(argv[(SBOX_INPUT_BITS / 2)], "wb");
     if (!firstOutFile)
     {
-        perror(argv[3]);
+        perror(argv[(SBOX_INPUT_BITS / 2)]);
         fclose(firstOutFile);
         return 1;
     }

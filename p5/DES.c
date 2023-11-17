@@ -52,11 +52,11 @@ void prepareKey(byte key[BLOCK_BYTES], char const *textKey)
 int getBit(byte const data[], int idx)
 {
     // Directly compare the index of the byte with the position it is at
-    int indexByte = (idx - 1) / 8;
-    int positionBit = (idx - 1) % 8;
+    int indexByte = (idx - 1) / BYTE_SIZE;
+    int positionBit = (idx - 1) % BYTE_SIZE;
 
     // Get the bit using the single bitwise operation
-    return (data[indexByte] >> (7 - positionBit)) & 1;
+    return (data[indexByte] >> ((BYTE_SIZE - 1) - positionBit)) & 1;
 }
 
 /**
@@ -72,8 +72,8 @@ int getBit(byte const data[], int idx)
 void putBit(byte data[], int idx, int val)
 {
     // Directly comparing the index of the byte with its position
-    int indexByte = (idx - 1) / 8;
-    int positionBit = (idx - 1) % 8;
+    int indexByte = (idx - 1) / BYTE_SIZE;
+    int positionBit = (idx - 1) % BYTE_SIZE;
 
     // Mask created for the position of the bit
     byte newMask = 1 << (7 - positionBit);
@@ -103,7 +103,7 @@ void putBit(byte data[], int idx, int val)
  */
 void permute(byte output[], byte const input[], int const perm[], int n)
 {
-    int calculateNumBytes = (n + 7) / 8;
+    int calculateNumBytes = (n + (BYTE_SIZE - 1)) / BYTE_SIZE;
 
     for (int idx = 0; idx < calculateNumBytes; idx++)
     {
@@ -125,11 +125,17 @@ void permute(byte output[], byte const input[], int const perm[], int n)
 
     // Print the output array after permutation
     printf("After permutation: ");
-    for (int i = 0; i <= calculateNumBytes; i++)
+    for (int i = 0; i < calculateNumBytes; i++)
     {
         printf("%02x ", output[i]);
     }
     printf("\n");
+
+    if (n % 8 != 0)
+    {
+        byte newMask = (1 << (8 - n % 8)) - 1;
+        output[calculateNumBytes - 1] &= ~newMask;
+    }
 }
 
 /**
@@ -166,10 +172,10 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
         int encryptShift = subkeyShiftSchedule[idx];
         printf("Round %d, encryptShift: %d\n", idx, encryptShift);
 
-        for (int idx1 = 0; idx1 < 2; idx1++)
+        for (int idx1 = 0; idx1 < (SBOX_OUTPUT_BITS / 2); idx1++)
         {
             byte *newStoreBlock = (idx1 == 0) ? Right : Left;
-            int tHalf = (SUBKEY_HALF_BITS + 7) / 8;
+            int tHalf = (SUBKEY_HALF_BITS + (BYTE_SIZE - 1)) / BYTE_SIZE;
             byte tByte[SUBKEY_HALF_BYTES];
             memcpy(tByte, newStoreBlock, tHalf);
 
@@ -199,8 +205,8 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
         }
 
         byte newSwapR[SUBKEY_HALF_BYTES], newSwapL[SUBKEY_HALF_BYTES];
-        memcpy(newSwapR, Right, 4);
-        memcpy(newSwapL, Left, 4);
+        memcpy(newSwapR, Right, SBOX_ROWS);
+        memcpy(newSwapL, Left, SBOX_ROWS);
         byte mainK[SUBKEY_BYTES];
 
         for (int idx = 1; idx <= SUBKEY_HALF_BITS; idx++)
@@ -249,13 +255,13 @@ void sBox(byte output[1], byte const input[SUBKEY_BYTES], int idx)
     // Extracting the bits and perform calculations
     for (int idx = 0; idx < SBOX_INPUT_BITS; idx++)
     {
-        int bitNum = (input[positionBit / SBOX_COUNT] >> (7 - (positionBit % SBOX_COUNT))) & 1;
+        int bitNum = (input[positionBit / SBOX_COUNT] >> ((BYTE_SIZE - 1) - (positionBit % SBOX_COUNT))) & 1;
         bitsStored = (bitsStored << 1) | bitNum;
         positionBit++;
     }
 
     // Perform calculations to figure out the row and column for table
-    int sBoxRow = (bitsStored & 0x20) >> SBOX_ROWS | (bitsStored & 0x1);
+    int sBoxRow = (bitsStored & BLOCK_HALF_BITS) >> SBOX_ROWS | (bitsStored & 1);
     int sBoxColumn = (bitsStored >> 1) & 0xF;
 
     // Extract the output from the table
@@ -295,11 +301,11 @@ void fFunction(byte result[BLOCK_HALF_BYTES], byte const R[BLOCK_HALF_BYTES], by
 
     // Perform substitution utilizing the S-boxes
     byte subBox[4] = {0, 0, 0, 0};
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < BYTE_SIZE; i++)
     {
         byte newOutput[1];
         sBox(newOutput, mixKeys, i);
-        subBox[i / 2] |= (i % 2 == 0) ? newOutput[0] : (newOutput[0] >> 4);
+        subBox[i / (SBOX_ROWS / (SBOX_ROWS / 2))] |= (i % (SBOX_ROWS / (SBOX_ROWS / 2)) == 0) ? newOutput[0] : (newOutput[0] >> SBOX_ROWS);
     }
 
     // Perform final permutation with the substituted result
