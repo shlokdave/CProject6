@@ -140,34 +140,22 @@ void permute(byte output[], byte const input[], int const perm[], int n)
   @param K the array of subkeys that will be stored in a different array.
   @param key the key that is used for the main encryption.
  */
-
 void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYTES])
 {
+  // Initial separation
   byte Left[SUBKEY_HALF_BYTES] = {0};
   byte Right[SUBKEY_HALF_BYTES] = {0};
 
+  // Perform intital permutations
   permute(Left, key, leftSubkeyPerm, SUBKEY_HALF_BITS);
-  printf("Left after permutation: ");
-  for (int i = 0; i < SUBKEY_HALF_BYTES; i++)
-  {
-    printf("%02x ", Left[i]);
-  }
-  printf("\n");
-
   permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
-  printf("Right after permutation: ");
-  for (int i = 0; i < SUBKEY_HALF_BYTES; i++)
-  {
-    printf("%02x ", Right[i]);
-  }
-  printf("\n");
 
+  // Iterate through each round
   for (int idx = 1; idx <= ROUND_COUNT; idx++)
   {
-    printf("Round: %d\n", idx);
     int encryptShift = subkeyShiftSchedule[idx];
-    printf("Encrypt Shift: %d\n", encryptShift);
 
+    // Start shifting process
     for (int idx1 = 0; idx1 < (SBOX_OUTPUT_BITS / 2); idx1++)
     {
       byte *newStoreBlock = (idx1 == 0) ? Right : Left;
@@ -175,6 +163,7 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
       byte tByte[SUBKEY_HALF_BYTES] = {0};
       memcpy(tByte, newStoreBlock, tHalf);
 
+      // Perform circular shift
       for (int idx2 = 0; idx2 < encryptShift; idx2++)
       {
         for (int idx3 = SUBKEY_HALF_BITS; idx3 > 0; idx3--)
@@ -191,44 +180,26 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
         }
         memcpy(newStoreBlock, tByte, tHalf);
       }
-
-      printf("New Store Block after shift %d: ", idx1);
-      for (int i = 0; i < tHalf; i++)
-      {
-        printf("%02x ", newStoreBlock[i]);
-      }
-      printf("\n");
     }
 
+    // Swap left and right blocks
     byte newSwapR[SUBKEY_HALF_BYTES] = {0};
     byte newSwapL[SUBKEY_HALF_BYTES] = {0};
     memcpy(newSwapR, Right, SBOX_ROWS);
     memcpy(newSwapL, Left, SBOX_ROWS);
     byte mainK[SUBKEY_BYTES] = {0};
 
+    // Combine the blocks
     for (int idx = 1; idx <= SUBKEY_HALF_BITS; idx++)
     {
       putBit(mainK, idx, getBit(newSwapL, idx));
       putBit(mainK, idx + SUBKEY_HALF_BITS, getBit(newSwapR, idx));
     }
 
-    printf("Combined MainK: ");
-    for (int i = 0; i < SUBKEY_BYTES; i++)
-    {
-      printf("%02x ", mainK[i]);
-    }
-    printf("\n");
-
+    // Perform final permutation and store the key
     byte newKey[SUBKEY_BYTES] = {0};
     permute(newKey, mainK, subkeyPerm, SUBKEY_BITS);
     memcpy(K[idx], newKey, (SUBKEY_BITS / BYTE_SIZE));
-
-    printf("Round %d subkey: ", idx);
-    for (int i = 0; i < SUBKEY_BYTES; i++)
-    {
-      printf("%02x ", K[idx][i]);
-    }
-    printf("\n");
   }
 }
 
@@ -344,19 +315,20 @@ static void helperEncryptBlock(byte Left[], byte Right[], const byte newOutput[]
 void encryptBlock(DESBlock *block, byte const K[ROUND_COUNT][SUBKEY_BYTES])
 {
   // Create a new block and perform the initial permutation
-  byte newBlock[BLOCK_BYTES];
+  byte newBlock[BLOCK_BYTES] = {0};
   permute(newBlock, block->data, leftInitialPerm, BLOCK_HALF_BITS);
   permute(newBlock + BLOCK_HALF_BYTES, block->data, rightInitialPerm, BLOCK_HALF_BITS);
 
   // Split the block of data into left and right halves
-  byte Left[BLOCK_HALF_BYTES], Right[BLOCK_HALF_BYTES];
+  byte Left[BLOCK_HALF_BYTES] = {0};
+  byte Right[BLOCK_HALF_BYTES] = {0};
   memcpy(Left, newBlock, BLOCK_HALF_BYTES);
   memcpy(Right, newBlock + BLOCK_HALF_BYTES, BLOCK_HALF_BYTES);
 
   // Loop to process each piece of the data through all the necessary rounds
   for (int idx = 1; idx < ROUND_COUNT; idx++)
   {
-    byte newOutput[BLOCK_HALF_BYTES];
+    byte newOutput[BLOCK_HALF_BYTES] = {0};
     fFunction(newOutput, Right, K[idx]);
 
     helperEncryptBlock(Left, Right, newOutput, BLOCK_HALF_BYTES);
