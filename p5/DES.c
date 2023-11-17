@@ -147,25 +147,11 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
     byte Right[SUBKEY_HALF_BYTES] = {0};
 
     permute(Left, key, leftSubkeyPerm, SUBKEY_HALF_BITS);
-    printf("After initial permute, Left: ");
-    for (int i = 0; i < SUBKEY_HALF_BYTES; i++)
-    {
-        printf("%02x ", Left[i]);
-    }
-    printf("\n");
-
     permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
-    printf("After initial permute, Right: ");
-    for (int i = 0; i < SUBKEY_HALF_BYTES; i++)
-    {
-        printf("%02x ", Right[i]);
-    }
-    printf("\n");
 
     for (int idx = 1; idx <= ROUND_COUNT; idx++)
     {
         int encryptShift = subkeyShiftSchedule[idx];
-        printf("Round %d, encryptShift: %d\n", idx, encryptShift);
 
         for (int idx1 = 0; idx1 < (SBOX_OUTPUT_BITS / 2); idx1++)
         {
@@ -190,13 +176,6 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
                 }
                 memcpy(newStoreBlock, tByte, tHalf);
             }
-
-            printf("After shift %d, newStoreBlock: ", idx1);
-            for (int i = 0; i < tHalf; i++)
-            {
-                printf("%02x ", newStoreBlock[i]);
-            }
-            printf("\n");
         }
 
         byte newSwapR[SUBKEY_HALF_BYTES] = {0};
@@ -211,24 +190,10 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
             putBit(mainK, idx + SUBKEY_HALF_BITS, getBit(newSwapR, idx));
         }
 
-        printf("After combining, mainK: ");
-        for (int i = 0; i < SUBKEY_BYTES; i++)
-        {
-            printf("%02x ", mainK[i]);
-        }
-        printf("\n");
-
         byte newKey[SUBKEY_BYTES] = {0};
         permute(newKey, mainK, subkeyPerm, SUBKEY_BITS);
 
         memcpy(K[idx], newKey, (SUBKEY_BITS / BYTE_SIZE));
-
-        printf("Round %d subkey: ", idx);
-        for (int i = 0; i < SUBKEY_BYTES; i++)
-        {
-            printf("%02x ", K[idx][i]);
-        }
-        printf("\n");
     }
 }
 
