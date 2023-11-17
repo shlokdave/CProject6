@@ -111,16 +111,11 @@ void permute(byte output[], byte const input[], int const perm[], int n)
 {
     int calculateNumBytes = (n + (BYTE_SIZE - 1)) / BYTE_SIZE;
 
+    // Initialize output array to zero
     for (int idx = 0; idx < calculateNumBytes; idx++)
     {
         output[idx] = 0;
     }
-    printf("Before permutation: ");
-    for (int i = 0; i < calculateNumBytes; i++)
-    {
-        printf("%02x ", input[i]);
-    }
-    printf("\n");
 
     // Permutation logic
     for (int idx = 0; idx < n; idx++)
@@ -129,17 +124,10 @@ void permute(byte output[], byte const input[], int const perm[], int n)
         putBit(output, idx + 1, bitCopy);
     }
 
-    // Print the output array after permutation
-    printf("After permutation: ");
-    for (int i = 0; i < calculateNumBytes; i++)
+    // Handle any leftover bits in the last byte if n is not a multiple of 8
+    if (n % 8 != 0)
     {
-        printf("%02x ", output[i]);
-    }
-    printf("\n");
-
-    if (n % BYTE_SIZE != 0)
-    {
-        byte newMask = (1 << (BYTE_SIZE - n % BYTE_SIZE)) - 1;
+        byte newMask = (1 << (8 - n % 8)) - 1;
         output[calculateNumBytes - 1] &= ~newMask;
     }
 }
