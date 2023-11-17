@@ -125,17 +125,11 @@ void permute(byte output[], byte const input[], int const perm[], int n)
 
     // Print the output array after permutation
     printf("After permutation: ");
-    for (int i = 0; i < calculateNumBytes; i++)
+    for (int i = 0; i <= calculateNumBytes; i++)
     {
         printf("%02x ", output[i]);
     }
     printf("\n");
-
-    if (n % 8 != 0)
-    {
-        byte newMask = (1 << (8 - n % 8)) - 1;
-        output[calculateNumBytes - 1] &= ~newMask;
-    }
 }
 
 /**
