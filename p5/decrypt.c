@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
   if (!firstInFile)
   {
     perror(argv[SECOND_ARG]);
-    fclose(firstInFile);
     return 1;
   }
 
@@ -67,7 +66,7 @@ int main(int argc, char *argv[])
   if (!firstOutFile)
   {
     perror(argv[THIRD_ARG]);
-    fclose(firstOutFile);
+    fclose(firstInFile);
     return 1;
   }
 

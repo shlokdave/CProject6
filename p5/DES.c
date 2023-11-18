@@ -151,31 +151,31 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
   permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
 
   // Iterate through each round
-  for (int idx = 1; idx < ROUND_COUNT; idx++)
+  for (int a = 1; a < ROUND_COUNT; a++)
   {
-    int encryptShift = subkeyShiftSchedule[idx];
+    int encryptShift = subkeyShiftSchedule[a];
 
     // Start shifting process
-    for (int idx1 = 0; idx1 < (SBOX_OUTPUT_BITS / 2); idx1++)
+    for (int b = 0; b < (SBOX_OUTPUT_BITS / 2); b++)
     {
-      byte *newStoreBlock = (idx1 == 0) ? Right : Left;
+      byte *newStoreBlock = (b == 0) ? Right : Left;
       int tHalf = (SUBKEY_HALF_BITS + (BYTE_SIZE - 1)) / BYTE_SIZE;
       byte tByte[SUBKEY_HALF_BYTES] = {0};
       memcpy(tByte, newStoreBlock, tHalf);
 
       // Perform circular shift
-      for (int idx2 = 0; idx2 < encryptShift; idx2++)
+      for (int c = 0; c < encryptShift; c++)
       {
-        for (int idx3 = SUBKEY_HALF_BITS; idx3 > 0; idx3--)
+        for (int d = SUBKEY_HALF_BITS; d > 0; d--)
         {
-          int getRequiredBit = getBit(newStoreBlock, idx3);
-          if (idx3 == 1)
+          int getRequiredBit = getBit(newStoreBlock, d);
+          if (d == 1)
           {
             putBit(tByte, SUBKEY_HALF_BITS, getRequiredBit);
           }
           else
           {
-            putBit(tByte, idx3 - 1, getRequiredBit);
+            putBit(tByte, d - 1, getRequiredBit);
           }
         }
         memcpy(newStoreBlock, tByte, tHalf);
@@ -199,7 +199,7 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
     // Perform final permutation and store the key
     byte newKey[SUBKEY_BYTES] = {0};
     permute(newKey, mainK, subkeyPerm, SUBKEY_BITS);
-    memcpy(K[idx], newKey, (SUBKEY_BITS / BYTE_SIZE));
+    memcpy(K[a], newKey, (SUBKEY_BITS / BYTE_SIZE));
   }
 }
 
@@ -220,7 +220,7 @@ void sBox(byte output[1], byte const input[SUBKEY_BYTES], int idx)
   int bitsStored = 0;
 
   // Extracting the bits and perform calculations
-  for (int idx = 0; idx < SBOX_INPUT_BITS; idx++)
+  for (int a = 0; a < SBOX_INPUT_BITS; a++)
   {
     int bitNum = (input[positionBit / SBOX_COUNT] >> ((BYTE_SIZE - 1) - (positionBit % SBOX_COUNT))) & 1;
     bitsStored = (bitsStored << 1) | bitNum;
@@ -236,9 +236,9 @@ void sBox(byte output[1], byte const input[SUBKEY_BYTES], int idx)
 
   // Final output stored
   output[0] = 0;
-  for (int idx = 0; idx < SBOX_OUTPUT_BITS; idx++)
+  for (int b = 0; b < SBOX_OUTPUT_BITS; b++)
   {
-    putBit(output, idx + 1, (getOutput >> (SBOX_OUTPUT_BITS - 1 - idx)) & 1);
+    putBit(output, b + 1, (getOutput >> (SBOX_OUTPUT_BITS - 1 - b)) & 1);
   }
 }
 
