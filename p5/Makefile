@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -std=c99 -g
+CFLAGS = -Wall -std=c99 -g -fno-stack-protector
 
 # Default target
 all: encrypt decrypt

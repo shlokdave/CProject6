@@ -156,7 +156,7 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
     int encryptShift = subkeyShiftSchedule[a];
 
     // Start shifting process
-    for (int b = 0; b < (SBOX_OUTPUT_BITS / 2); b++)
+    for (int b = 0; b < (SBOX_OUTPUT_BITS / HALF_SBOX); b++)
     {
       byte *newStoreBlock = (b == 0) ? Right : Left;
       int tHalf = (SUBKEY_HALF_BITS + (BYTE_SIZE - 1)) / BYTE_SIZE;
