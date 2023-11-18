@@ -1,9 +1,10 @@
 CC = gcc
 CFLAGS = -Wall -std=c99 -g
 
-# Targets
-all: encrypt decrypt DESTest
+# Default target
+all: encrypt decrypt
 
+# Targets
 encrypt: encrypt.o io.o DES.o DESMagic.o
 	$(CC) $(CFLAGS) -o encrypt encrypt.o io.o DES.o DESMagic.o
 
