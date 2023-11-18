@@ -32,7 +32,7 @@ void prepareKey(byte key[BLOCK_BYTES], char const *textKey)
   int newIndex = 0;
 
   // Loop to ensure current character is not null and the index is not more than the size
-  while (textKey[newIndex] != '\0' && newIndex < BLOCK_BYTES)
+  while (newIndex < BLOCK_BYTES && textKey[newIndex] != '\0') // changed the order of conditions
   {
     key[newIndex] = (byte)textKey[newIndex];
     newIndex++;
@@ -151,7 +151,7 @@ void generateSubkeys(byte K[ROUND_COUNT][SUBKEY_BYTES], byte const key[BLOCK_BYT
   permute(Right, key, rightSubkeyPerm, SUBKEY_HALF_BITS);
 
   // Iterate through each round
-  for (int idx = 1; idx <= ROUND_COUNT; idx++)
+  for (int idx = 1; idx < ROUND_COUNT; idx++)
   {
     int encryptShift = subkeyShiftSchedule[idx];
 
