@@ -357,7 +357,11 @@ void decryptBlock(DESBlock *block, byte const K[ROUND_COUNT][SUBKEY_BYTES])
   // Loop to help reverse the order of the keys
   for (int round = 1; round <= ROUND_COUNT; round++)
   {
-    memcpy(reversedSubkeys[round - 1], K[ROUND_COUNT - round + 1], SUBKEY_BYTES);
+    // Loop to copy the byte
+    for (int idx = 0; idx < SUBKEY_BYTES; idx++)
+    {
+      reversedSubkeys[round - 1][idx] = K[ROUND_COUNT - round + 1][idx];
+    }
   }
 
   // Call the encryptBlock method with the reversed keys to simplify the process
