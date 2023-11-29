@@ -1,0 +1,13 @@
+set "v1" NULL 
+set "v2" NULL
+equals "v1" "v2"
+
+set "v1" ""
+equals "v1" "v2"
+
+set "v2" ""
+equals "v1" "v2"
+
+remove "v1"
+remove "v2"
+equals "v1" "v2"

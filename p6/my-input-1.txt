@@ -1,0 +1,6 @@
+remove some_key_not_in_file
+set "" ""
+remove ""
+set NULL NULL
+set "valid key" NULL
+remove NULL
