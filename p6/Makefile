@@ -1,3 +1,4 @@
+# Warning flags
 CC = gcc
 CFLAGS += -Wall -std=c99 -g
 LDLIBS +=
@@ -5,7 +6,7 @@ LDLIBS +=
 # Default target
 all: driver
 
-# Driver program (assuming 'driver' is your main executable)
+# Object files
 driver: driver.o value.o map.o input.o
 	$(CC) $(CFLAGS) $(LDLIBS) -o driver driver.o value.o map.o input.o $(LDLIBS)
 
@@ -35,7 +36,6 @@ map.o: map.c map.h
 input.o: input.c input.h
 	$(CC) $(CFLAGS) -c input.c
 
+# Clean target
 clean:
 	rm -f driver stringTest mapTest *.o *.gcda *.gcno *.gcov
-
-.PHONY: clean
