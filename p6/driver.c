@@ -40,13 +40,14 @@
   @param value pointer to the value structure for where the result of the parsing process
   will be stored.
   @param str pointer to the string that will be passed to be able to be parsed.
-  @param isKey boolean representation to check if there is a key. It is true if the function
+  @param hasK boolean representation to check if there is a key. It is true if the function
   passes a string as a key, but false if it parses it as a value instead.
   @return the function returns an integer that will indicate the success or failure of the function.
   The function returns the result of the parsing process.
 */
-static int detKeyOrVal(Value *value, char *str, bool isKey)
+static int detKeyOrVal(Value *value, char *str, bool hasK)
 {
+    // Check if the string or value is null.
     if (str == NULL || value == NULL)
     {
         return 0;
@@ -55,22 +56,22 @@ static int detKeyOrVal(Value *value, char *str, bool isKey)
     memset(value, 0, sizeof(Value));
     int parseResult = 0;
 
-    // For keys, always parse as a string
-    if (isKey)
+    // Parse as string here for the key.
+    if (hasK)
     {
         parseResult = parseString(value, str);
     }
     else
     {
-        // For values, check if it's a string or integer
+        // Check whether it should be a string or an integer.
         if (str[0] == '\"')
         {
-            // If the value starts with a quote, parse as a string
+            // If the value starts with a quote, parse as a string.
             parseResult = parseString(value, str);
         }
         else
         {
-            // Otherwise, parse as an integer
+            // Otherwise, parse as an integer.
             parseResult = parseInteger(value, str);
         }
     }
@@ -223,7 +224,7 @@ static void commGet(Map *m, char *comm)
         printf("Undefined\n");
     }
 
-    key.empty(&key); // Free the key if it's no longer needed
+    key.empty(&key);
 }
 
 /**
