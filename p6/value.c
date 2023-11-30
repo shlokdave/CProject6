@@ -12,6 +12,7 @@
 #include <ctype.h>
 
 #define BUFFER_SIZE 1024
+
 //////////////////////////////////////////////////////////
 // Integer implementation.
 
@@ -39,7 +40,7 @@ static void moveInteger(Value const *src, Value *dest)
 static bool equalsInteger(Value const *v, Value const *other)
 {
   // Make sure the other object is also an Integer.
-  // (i.e., it uses the same print function)
+  // (i.e., it uses the same print funtion)
   if (other->print != printInteger)
     return false;
 
@@ -56,7 +57,7 @@ static unsigned int hashInteger(Value const *v)
 // Free memory used inside this integer Value.
 static void emptyInteger(Value *v)
 {
-  // An int value doesn't need any additional memory.
+  // An int vaue doesn't need any additional memory.
 }
 
 int parseInteger(Value *v, char const *str)
@@ -81,6 +82,13 @@ int parseInteger(Value *v, char const *str)
 // Print method for String.
 static void printString(Value const *v)
 {
+  // Check if the pointer is null.
+  if (v->vptr == NULL)
+  {
+    printf("(null)");
+    return;
+  }
+
   // Print the string inside this value.
   printf("\"%s\"", (char *)v->vptr);
 }
@@ -140,9 +148,16 @@ static unsigned int hashString(Value const *v)
   return hash;
 }
 
+// Empty method for String.
 static void emptyString(Value *v)
 {
-  // String value doesn't need additional memory.
+  // Check if v pointer is null
+  if (v != NULL && v->vptr != NULL)
+  {
+    // Free the memory of the vptr member
+    free(v->vptr);
+    v->vptr = NULL;
+  }
 }
 
 /**
@@ -156,6 +171,7 @@ static void emptyString(Value *v)
 */
 int parseString(Value *v, char const *str)
 {
+
   // Position in the string.
   const char *posString = str;
 
@@ -175,7 +191,12 @@ int parseString(Value *v, char const *str)
 
   // Copy the new string for memory allocation.
   char *copyNewString = malloc(strlen(newBuff) + 1);
+  if (!copyNewString)
+  {
+    return 0;
+  }
   strcpy(copyNewString, newBuff);
+  v->vptr = copyNewString;
 
   // Value struct copying process.
   v->vptr = copyNewString;

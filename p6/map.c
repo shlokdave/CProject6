@@ -111,10 +111,9 @@ void mapSet(Map *m, Value *key, Value *val)
   MapPair **currPairs = &m->table[mapIdx];
   while (*currPairs)
   {
-    // If the current key matches the given key, the value is replaced.
     if (key->equals(&(*currPairs)->key, key))
     {
-      // The previous key is freed.
+      // Free existing string value here.
       (*currPairs)->val.empty(&(*currPairs)->val);
       val->move(val, &(*currPairs)->val);
       return;
@@ -191,17 +190,16 @@ bool mapRemove(Map *m, Value *key)
 
   // Double pointer is used to traverse properly.
   MapPair **currPairs = &m->table[idx];
-  MapPair *valRem = NULL;
 
-  while (*currPairs != NULL)
+  while (*currPairs)
   {
-    // If key is found, prepare to remove it.
+    // If key is found, begin removal process.
     if (key->equals(&(*currPairs)->key, key))
     {
-      valRem = *currPairs;
+      MapPair *valRem = *currPairs;
       *currPairs = valRem->next;
 
-      // Key and value are freed along with the map pair.
+      // Free the key and value
       valRem->key.empty(&valRem->key);
       valRem->val.empty(&valRem->val);
       free(valRem);
@@ -212,7 +210,6 @@ bool mapRemove(Map *m, Value *key)
     currPairs = &(*currPairs)->next;
   }
 
-  // Return false if the key needed for removal is not found.
   return false;
 }
 
@@ -233,16 +230,16 @@ void freeMap(Map *m)
   {
     MapPair *currPairs = m->table[idx];
 
-    // Free memory for each of the keys and values.
+    // Free memory for each key and value.
     while (currPairs != NULL)
     {
-      MapPair *valFree = currPairs;
-      currPairs = currPairs->next;
+      MapPair *next = currPairs->next;
 
-      // Key and value are freed along with the map pair.
-      valFree->key.empty(&valFree->key);
-      valFree->val.empty(&valFree->val);
-      free(valFree);
+      currPairs->key.empty(&currPairs->key);
+      currPairs->val.empty(&currPairs->val);
+      free(currPairs);
+
+      currPairs = next;
     }
   }
 

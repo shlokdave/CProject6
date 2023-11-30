@@ -120,6 +120,7 @@ static void commSet(Map *m, char *comm)
         // Parse the key with the string format.
         if (!detKeyOrVal(&key, sepKey, true))
         {
+
             return;
         }
     }
@@ -154,9 +155,6 @@ static void commSet(Map *m, char *comm)
 
     // Set the parsed key and value onto the map.
     mapSet(m, &key, &value);
-
-    key.empty(&key);
-    value.empty(&value);
 }
 
 /**
@@ -215,7 +213,6 @@ static void commGet(Map *m, char *comm)
     // Initializing value for Val struct.
     Value *value = mapGet(m, &key);
 
-    // Check for value being presented and print it.
     if (value && value->print)
     {
         value->print(value);
@@ -226,7 +223,7 @@ static void commGet(Map *m, char *comm)
         printf("Undefined\n");
     }
 
-    key.empty(&key);
+    key.empty(&key); // Free the key if it's no longer needed
 }
 
 /**
@@ -338,6 +335,7 @@ int main()
         // Checks if the function of readLine is null.
         if (lineRead == NULL)
         {
+            free(lineRead);
             break;
         }
 
@@ -372,7 +370,9 @@ int main()
             printf("Invalid command\n");
         }
         free(lineRead);
+        lineRead = NULL;
     }
+    free(lineRead);
 
     freeMap(newMap);
     return 0;
