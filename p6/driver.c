@@ -47,36 +47,36 @@
 */
 static int detKeyOrVal(Value *value, char *str, bool hasK)
 {
-    // Check if the string or value is null.
-    if (str == NULL || value == NULL)
-    {
-        return 0;
-    }
+  // Check if the string or value is null.
+  if (str == NULL || value == NULL)
+  {
+    return 0;
+  }
 
-    memset(value, 0, sizeof(Value));
-    int parseResult = 0;
+  memset(value, 0, sizeof(Value));
+  int parseResult = 0;
 
-    // Parse as string here for the key.
-    if (hasK)
+  // Parse as string here for the key.
+  if (hasK)
+  {
+    parseResult = parseString(value, str);
+  }
+  else
+  {
+    // Check whether it should be a string or an integer.
+    if (str[0] == '\"')
     {
-        parseResult = parseString(value, str);
+      // If the value starts with a quote, parse as a string.
+      parseResult = parseString(value, str);
     }
     else
     {
-        // Check whether it should be a string or an integer.
-        if (str[0] == '\"')
-        {
-            // If the value starts with a quote, parse as a string.
-            parseResult = parseString(value, str);
-        }
-        else
-        {
-            // Otherwise, parse as an integer.
-            parseResult = parseInteger(value, str);
-        }
+      // Otherwise, parse as an integer.
+      parseResult = parseInteger(value, str);
     }
+  }
 
-    return parseResult;
+  return parseResult;
 }
 
 /**
@@ -90,72 +90,73 @@ static int detKeyOrVal(Value *value, char *str, bool hasK)
 */
 static void commSet(Map *m, char *comm)
 {
-    // Splits the string into a key and a value.
-    strtok(comm, " ");
-    char *sepKey = strtok(NULL, " ");
+  // Splits the string into a key and a value.
+  strtok(comm, " ");
+  char *sepKey = strtok(NULL, " ");
 
-    // Check if the key is present or not.
-    if (!sepKey)
+  // Check if the key is present or not.
+  if (!sepKey)
+  {
+    printf("ERROR: Key Missing\n");
+    return;
+  }
+
+  // Initializing key for Val struct.
+  Value key = {0};
+
+  // Check if the Key is a string with quotes.
+  if (sepKey[0] == '\"')
+  {
+    // Find the end of the string.
+    char *endOfStr = strchr(sepKey + 1, '\"');
+    if (!endOfStr)
     {
-        printf("ERROR: Key Missing\n");
-        return;
+      printf("ERROR: Key is not in proper format\n");
+      return;
     }
 
-    // Initializing key for Val struct.
-    Value key = {0};
+    // Perform null termination for the key.
+    *(endOfStr + 1) = '\0';
 
-    // Check if the Key is a string with quotes.
-    if (sepKey[0] == '\"')
+    // Parse the key with the string format.
+    if (!detKeyOrVal(&key, sepKey, true))
     {
-        // Find the end of the string.
-        char *endOfStr = strchr(sepKey + 1, '\"');
-        if (!endOfStr)
-        {
-            printf("ERROR: Key is not in proper format\n");
-            return;
-        }
-
-        // Perform null termination for the key.
-        *(endOfStr + 1) = '\0';
-
-        // Parse the key with the string format.
-        if (!detKeyOrVal(&key, sepKey, true))
-        {
-
-            return;
-        }
+      key.empty(&key);
+      return;
     }
-    else
+  }
+  else
+  {
+    // Parsing the key for an integer format.
+    if (!detKeyOrVal(&key, sepKey, false))
     {
-        // Parsing the key for an integer format.
-        if (!detKeyOrVal(&key, sepKey, false))
-        {
-            return;
-        }
+      key.empty(&key);
+      return;
     }
+  }
 
-    char *sepVal = strtok(NULL, "");
+  char *sepVal = strtok(NULL, "");
 
-    // Check if the value is present or not.
-    if (!sepVal)
-    {
-        printf("ERROR: Value Missing\n");
-        key.empty(&key);
-        return;
-    }
+  // Check if the value is present or not.
+  if (!sepVal)
+  {
+    printf("ERROR: Value Missing\n");
+    key.empty(&key);
+    return;
+  }
 
-    // Initializing value for Val struct.
-    Value value = {0};
+  // Initializing value for Val struct.
+  Value value = {0};
 
-    // Parse as either a string or an integer format.
-    if (!detKeyOrVal(&value, sepVal, false))
-    {
-        key.empty(&key);
-        return;
-    }
+  // Parse as either a string or an integer format.
+  if (!detKeyOrVal(&value, sepVal, false))
+  {
+    key.empty(&key);
+    return;
+  }
 
-    // Set the parsed key and value onto the map.
-    mapSet(m, &key, &value);
+  // Set the parsed key and value onto the map.
+  mapSet(m, &key, &value);
 }
 
 /**
@@ -169,62 +170,62 @@ static void commSet(Map *m, char *comm)
 */
 static void commGet(Map *m, char *comm)
 {
-    // Splits the string into a key and a value.
-    strtok(comm, " ");
-    char *sepKey = strtok(NULL, " ");
+  // Splits the string into a key and a value.
+  strtok(comm, " ");
+  char *sepKey = strtok(NULL, " ");
 
-    // Check if the key is present or not.
-    if (!sepKey)
+  // Check if the key is present or not.
+  if (!sepKey)
+  {
+    printf("ERROR: Key Missing\n");
+    return;
+  }
+
+  // Initializing key for Val struct.
+  Value key = {0};
+
+  // Check if the Key is a string with quotes.
+  if (sepKey[0] == '\"')
+  {
+    // Find the end of the string.
+    char *endOfStr = strchr(sepKey + 1, '\"');
+    if (!endOfStr)
     {
-        printf("ERROR: Key Missing\n");
-        return;
+      printf("ERROR: Key is not in proper format\n");
+      return;
     }
+    // Perform null termination for the key.
+    *(endOfStr + 1) = '\0';
 
-    // Initializing key for Val struct.
-    Value key = {0};
-
-    // Check if the Key is a string with quotes.
-    if (sepKey[0] == '\"')
+    // Parse the key with the string format.
+    if (!detKeyOrVal(&key, sepKey, true))
     {
-        // Find the end of the string.
-        char *endOfStr = strchr(sepKey + 1, '\"');
-        if (!endOfStr)
-        {
-            printf("ERROR: Key is not in proper format\n");
-            return;
-        }
-        // Perform null termination for the key.
-        *(endOfStr + 1) = '\0';
-
-        // Parse the key with the string format.
-        if (!detKeyOrVal(&key, sepKey, true))
-        {
-            return;
-        }
+      return;
     }
-    else
+  }
+  else
+  {
+    // Parse the key with the integer format.
+    if (!detKeyOrVal(&key, sepKey, false))
     {
-        // Parse the key with the integer format.
-        if (!detKeyOrVal(&key, sepKey, false))
-        {
-            return;
-        }
+      return;
     }
+  }
 
-    // Initializing value for Val struct.
-    Value *value = mapGet(m, &key);
+  // Initializing value for Val struct.
+  Value *value = mapGet(m, &key);
 
-    if (value && value->print)
-    {
-        value->print(value);
-        printf("\n");
-    }
-    else
-    {
-        printf("Undefined\n");
-    }
+  if (value && value->print)
+  {
+    value->print(value);
+    printf("\n");
+  }
+  else
+  {
+    printf("Undefined\n");
+  }
 
-    key.empty(&key);
+  key.empty(&key);
 }
 
 /**
@@ -237,54 +238,54 @@ static void commGet(Map *m, char *comm)
 */
 static void commRemove(Map *m, char *comm)
 {
-    // Splits the string into a key and a value.
-    strtok(comm, " ");
-    char *sepKey = strtok(NULL, " ");
+  // Splits the string into a key and a value.
+  strtok(comm, " ");
+  char *sepKey = strtok(NULL, " ");
 
-    // Check if the key is present or not.
-    if (!sepKey)
+  // Check if the key is present or not.
+  if (!sepKey)
+  {
+    printf("ERROR: Key Missing\n");
+    return;
+  }
+
+  // Initializing key for Val struct.
+  Value key = {0};
+
+  // Check if the Key is a string with quotes.
+  if (sepKey[0] == '\"')
+  {
+    // Find the end of the string.
+    char *endOfStr = strchr(sepKey + 1, '\"');
+    if (!endOfStr)
     {
-        printf("ERROR: Key Missing\n");
-        return;
+      printf("ERROR: Key is not in proper format\n");
+      return;
     }
+    *(endOfStr + 1) = '\0';
 
-    // Initializing key for Val struct.
-    Value key = {0};
-
-    // Check if the Key is a string with quotes.
-    if (sepKey[0] == '\"')
+    // Parse the key with the string format.
+    if (!detKeyOrVal(&key, sepKey, true))
     {
-        // Find the end of the string.
-        char *endOfStr = strchr(sepKey + 1, '\"');
-        if (!endOfStr)
-        {
-            printf("ERROR: Key is not in proper format\n");
-            return;
-        }
-        *(endOfStr + 1) = '\0';
-
-        // Parse the key with the string format.
-        if (!detKeyOrVal(&key, sepKey, true))
-        {
-            return;
-        }
+      return;
     }
-    else
+  }
+  else
+  {
+    // Parse the key with the integer format.
+    if (!detKeyOrVal(&key, sepKey, false))
     {
-        // Parse the key with the integer format.
-        if (!detKeyOrVal(&key, sepKey, false))
-        {
-            return;
-        }
+      return;
     }
+  }
 
-    // Remove the key-value pair from the map.
-    if (!mapRemove(m, &key))
-    {
-        printf("ERROR: Pair not\n");
-    }
+  // Remove the key-value pair from the map.
+  if (!mapRemove(m, &key))
+  {
+    printf("ERROR: Pair not\n");
+  }
 
-    key.empty(&key);
+  key.empty(&key);
 }
 
 /**
@@ -294,7 +295,7 @@ static void commRemove(Map *m, char *comm)
 */
 static void commSize(Map *map)
 {
-    printf("%d\n", mapSize(map));
+  printf("%d\n", mapSize(map));
 }
 
 /**
@@ -306,75 +307,75 @@ static void commSize(Map *map)
 */
 int main()
 {
-    Map *newMap = makeMap(MAP_SIZE);
+  Map *newMap = makeMap(MAP_SIZE);
 
-    // Check if the map cannot be created for any reason.
-    if (!newMap)
+  // Check if the map cannot be created for any reason.
+  if (!newMap)
+  {
+    fprintf(stderr, "ERROR: Map cannot be created\n");
+    return 1;
+  }
+
+  // Declare variables to read the line and flag for current command.
+  char *lineRead = NULL;
+  bool firComm = true;
+
+  // Traverse whiole true to process all commands
+  while (true)
+  {
+    // Prints line to new line.
+    if (!firComm)
     {
-        fprintf(stderr, "ERROR: Map cannot be created\n");
-        return 1;
+      printf("\n");
     }
 
-    // Declare variables to read the line and flag for current command.
-    char *lineRead = NULL;
-    bool firComm = true;
+    printf("cmd> ");
 
-    // Traverse whiole true to process all commands
-    while (true)
+    // Reads the line of input from the user.
+    lineRead = readLine(stdin);
+
+    // Checks if the function of readLine is null.
+    if (lineRead == NULL)
     {
-        // Prints line to new line.
-        if (!firComm)
-        {
-            printf("\n");
-        }
+      free(lineRead);
+      break;
+    }
 
-        printf("cmd> ");
+    firComm = false;
 
-        // Reads the line of input from the user.
-        lineRead = readLine(stdin);
+    // Command entered back to the user.s
+    printf("%s\n", lineRead);
 
-        // Checks if the function of readLine is null.
-        if (lineRead == NULL)
-        {
-            free(lineRead);
-            break;
-        }
-
-        firComm = false;
-
-        // Command entered back to the user.s
-        printf("%s\n", lineRead);
-
-        // Go through all the commands in the loop.
-        if (strncmp(lineRead, "set", SET_COMM) == 0)
-        {
-            commSet(newMap, lineRead);
-        }
-        else if (strncmp(lineRead, "get", GET_COMM) == 0)
-        {
-            commGet(newMap, lineRead);
-        }
-        else if (strncmp(lineRead, "remove", REM_COMM) == 0)
-        {
-            commRemove(newMap, lineRead);
-        }
-        else if (strncmp(lineRead, "size", SIZE_COMM) == 0)
-        {
-            commSize(newMap);
-        }
-        else if (strncmp(lineRead, "quit", QUIT_COMM) == 0)
-        {
-            break;
-        }
-        else
-        {
-            printf("Invalid command\n");
-        }
-        free(lineRead);
-        lineRead = NULL;
+    // Go through all the commands in the loop.
+    if (strncmp(lineRead, "set", SET_COMM) == 0)
+    {
+      commSet(newMap, lineRead);
+    }
+    else if (strncmp(lineRead, "get", GET_COMM) == 0)
+    {
+      commGet(newMap, lineRead);
+    }
+    else if (strncmp(lineRead, "remove", REM_COMM) == 0)
+    {
+      commRemove(newMap, lineRead);
+    }
+    else if (strncmp(lineRead, "size", SIZE_COMM) == 0)
+    {
+      commSize(newMap);
+    }
+    else if (strncmp(lineRead, "quit", QUIT_COMM) == 0)
+    {
+      break;
+    }
+    else
+    {
+      printf("Invalid command\n");
     }
     free(lineRead);
+    lineRead = NULL;
+  }
+  free(lineRead);
 
-    freeMap(newMap);
-    return 0;
+  freeMap(newMap);
+  return 0;
 }

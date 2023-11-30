@@ -35,56 +35,56 @@
 */
 char *readLine(FILE *fp)
 {
-    char newBuffArrary[BUFFER];
-    char *newLineChar = (char *)malloc(CAPACITY * sizeof(char));
-    int initalized_capacity = CAPACITY;
-    int lengthOfLine = 0;
+  char newBuffArrary[BUFFER];
+  char *newLineChar = (char *)malloc(CAPACITY * sizeof(char));
+  int initalized_capacity = CAPACITY;
+  int lengthOfLine = 0;
 
-    if (!newLineChar)
+  if (!newLineChar)
+  {
+    perror("Did not pass the memory allocation.");
+    exit(1);
+  }
+
+  while (fgets(newBuffArrary, BUFFER, fp))
+  {
+    int newBuffArraryLen = strlen(newBuffArrary);
+
+    if (newBuffArraryLen > 0 && newBuffArrary[newBuffArraryLen - 1] == '\n')
     {
+      newBuffArrary[--newBuffArraryLen] = '\0';
+    }
+
+    if (initalized_capacity <= lengthOfLine + newBuffArraryLen)
+    {
+      while (initalized_capacity <= lengthOfLine + newBuffArraryLen)
+      {
+        initalized_capacity *= CAPACITY_ADD;
+      }
+      char *newLineChar2 = (char *)realloc(newLineChar, initalized_capacity * sizeof(char));
+
+      if (!newLineChar2)
+      {
+        free(newLineChar);
         perror("Did not pass the memory allocation.");
         exit(1);
+      }
+      newLineChar = newLineChar2;
     }
+    strcpy(newLineChar + lengthOfLine, newBuffArrary);
+    lengthOfLine += newBuffArraryLen;
 
-    while (fgets(newBuffArrary, BUFFER, fp))
+    if (newBuffArraryLen < BUFFER - 1 || newBuffArrary[BUFFER - 2] == '\n')
     {
-        int newBuffArraryLen = strlen(newBuffArrary);
-
-        if (newBuffArraryLen > 0 && newBuffArrary[newBuffArraryLen - 1] == '\n')
-        {
-            newBuffArrary[--newBuffArraryLen] = '\0';
-        }
-
-        if (initalized_capacity <= lengthOfLine + newBuffArraryLen)
-        {
-            while (initalized_capacity <= lengthOfLine + newBuffArraryLen)
-            {
-                initalized_capacity *= CAPACITY_ADD;
-            }
-            char *newLineChar2 = (char *)realloc(newLineChar, initalized_capacity * sizeof(char));
-
-            if (!newLineChar2)
-            {
-                free(newLineChar);
-                perror("Did not pass the memory allocation.");
-                exit(1);
-            }
-            newLineChar = newLineChar2;
-        }
-        strcpy(newLineChar + lengthOfLine, newBuffArrary);
-        lengthOfLine += newBuffArraryLen;
-
-        if (newBuffArraryLen < BUFFER - 1 || newBuffArrary[BUFFER - 2] == '\n')
-        {
-            break;
-        }
+      break;
     }
+  }
 
-    if (feof(fp) && lengthOfLine == 0)
-    {
-        free(newLineChar);
-        return NULL;
-    }
+  if (feof(fp) && lengthOfLine == 0)
+  {
+    free(newLineChar);
+    return NULL;
+  }
 
-    return newLineChar;
+  return newLineChar;
 }
