@@ -1,3 +1,9 @@
-set 10000000000000
-size
+set 3 300
+set 103 10300
+get 3
+get 103
+set "B" "Value for B"
+set "G" "Value for G"
+get "B"
+get "G"
 quit

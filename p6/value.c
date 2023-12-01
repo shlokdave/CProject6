@@ -82,13 +82,6 @@ int parseInteger(Value *v, char const *str)
 // Print method for String.
 static void printString(Value const *v)
 {
-  // Check if the pointer is null.
-  if (v->vptr == NULL)
-  {
-    printf("(null)");
-    return;
-  }
-
   // Print the string inside this value.
   printf("\"%s\"", (char *)v->vptr);
 }
@@ -131,7 +124,7 @@ static unsigned int hashString(Value const *v)
   {
     const char *newString = (char *)v->vptr;
 
-    // Iterates through each character of string.s
+    // Iterates through each character of string.
     while (*newString)
     {
       // Casting unsigned char for proper handling.
@@ -151,10 +144,10 @@ static unsigned int hashString(Value const *v)
 // Empty method for String.
 static void emptyString(Value *v)
 {
-  // Check if v pointer is null
+  // Check if v pointer is null.
   if (v != NULL && v->vptr != NULL)
   {
-    // Free the memory of the vptr member
+    // Free the memory of the vptr member.
     free(v->vptr);
     v->vptr = NULL;
   }
@@ -191,10 +184,6 @@ int parseString(Value *v, char const *str)
 
   // Copy the new string for memory allocation.
   char *copyNewString = malloc(strlen(newBuff) + 1);
-  if (!copyNewString)
-  {
-    return 0;
-  }
   strcpy(copyNewString, newBuff);
   v->vptr = copyNewString;
 

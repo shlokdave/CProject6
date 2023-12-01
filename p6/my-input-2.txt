@@ -1,13 +1,14 @@
-set "v1" NULL 
-set "v2" NULL
-equals "v1" "v2"
+set "testing1" NULL 
+set "testing2" NULL
+equals "testing1" "testing2"
 
-set "v1" ""
-equals "v1" "v2"
+set "testing1" ""
+equals "testing1" "testing2"
 
-set "v2" ""
-equals "v1" "v2"
+set "testing2" ""
+equals "testing1" "testing2"
 
-remove "v1"
-remove "v2"
-equals "v1" "v2"
+remove "testing1"
+remove "testing2"
+equals "testing1" "testing2"
+quit

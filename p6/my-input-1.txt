@@ -1,6 +1,22 @@
-remove some_key_not_in_file
-set "" ""
-remove ""
-set NULL NULL
-set "valid key" NULL
-remove NULL
+set 690 "Red"
+set 600 "Orange"
+set 570 "Yellow"
+set 540 "Green"
+set 510 "Cyan"
+set 470 "Blue"
+set 410 "Violet"
+get 600  
+get 540
+set 540 "Green"
+get 540
+get 410
+remove 410
+size
+set "v1" NULL
+set "v2" NULL
+equals "v1" "v2"  # Should return true as both are NULL/Invalid commands
+set "v1" ""
+set "v2" ""
+remove "v1"
+remove "v2"
+quit

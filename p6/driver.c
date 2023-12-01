@@ -47,12 +47,6 @@
 */
 static int detKeyOrVal(Value *value, char *str, bool hasK)
 {
-  // Check if the string or value is null.
-  if (str == NULL || value == NULL)
-  {
-    return 0;
-  }
-
   memset(value, 0, sizeof(Value));
   int parseResult = 0;
 
@@ -94,13 +88,6 @@ static void commSet(Map *m, char *comm)
   strtok(comm, " ");
   char *sepKey = strtok(NULL, " ");
 
-  // Check if the key is present or not.
-  if (!sepKey)
-  {
-    printf("ERROR: Key Missing\n");
-    return;
-  }
-
   // Initializing key for Val struct.
   Value key = {0};
 
@@ -109,13 +96,6 @@ static void commSet(Map *m, char *comm)
   {
     // Find the end of the string.
     char *endOfStr = strchr(sepKey + 1, '\"');
-    if (!endOfStr)
-    {
-      printf("ERROR: Key is not in proper format\n");
-      return;
-    }
-
-    // Perform null termination for the key.
     *(endOfStr + 1) = '\0';
 
     // Parse the key with the string format.
@@ -136,14 +116,6 @@ static void commSet(Map *m, char *comm)
   }
 
   char *sepVal = strtok(NULL, "");
-
-  // Check if the value is present or not.
-  if (!sepVal)
-  {
-    printf("ERROR: Value Missing\n");
-    key.empty(&key);
-    return;
-  }
 
   // Initializing value for Val struct.
   Value value = {0};
@@ -174,13 +146,6 @@ static void commGet(Map *m, char *comm)
   strtok(comm, " ");
   char *sepKey = strtok(NULL, " ");
 
-  // Check if the key is present or not.
-  if (!sepKey)
-  {
-    printf("ERROR: Key Missing\n");
-    return;
-  }
-
   // Initializing key for Val struct.
   Value key = {0};
 
@@ -189,12 +154,6 @@ static void commGet(Map *m, char *comm)
   {
     // Find the end of the string.
     char *endOfStr = strchr(sepKey + 1, '\"');
-    if (!endOfStr)
-    {
-      printf("ERROR: Key is not in proper format\n");
-      return;
-    }
-    // Perform null termination for the key.
     *(endOfStr + 1) = '\0';
 
     // Parse the key with the string format.
@@ -242,13 +201,6 @@ static void commRemove(Map *m, char *comm)
   strtok(comm, " ");
   char *sepKey = strtok(NULL, " ");
 
-  // Check if the key is present or not.
-  if (!sepKey)
-  {
-    printf("ERROR: Key Missing\n");
-    return;
-  }
-
   // Initializing key for Val struct.
   Value key = {0};
 
@@ -257,11 +209,6 @@ static void commRemove(Map *m, char *comm)
   {
     // Find the end of the string.
     char *endOfStr = strchr(sepKey + 1, '\"');
-    if (!endOfStr)
-    {
-      printf("ERROR: Key is not in proper format\n");
-      return;
-    }
     *(endOfStr + 1) = '\0';
 
     // Parse the key with the string format.
@@ -308,13 +255,6 @@ static void commSize(Map *map)
 int main()
 {
   Map *newMap = makeMap(MAP_SIZE);
-
-  // Check if the map cannot be created for any reason.
-  if (!newMap)
-  {
-    fprintf(stderr, "ERROR: Map cannot be created\n");
-    return 1;
-  }
 
   // Declare variables to read the line and flag for current command.
   char *lineRead = NULL;

@@ -40,12 +40,6 @@ char *readLine(FILE *fp)
   int initalized_capacity = CAPACITY;
   int lengthOfLine = 0;
 
-  if (!newLineChar)
-  {
-    perror("Did not pass the memory allocation.");
-    exit(1);
-  }
-
   while (fgets(newBuffArrary, BUFFER, fp))
   {
     int newBuffArraryLen = strlen(newBuffArrary);
@@ -62,19 +56,12 @@ char *readLine(FILE *fp)
         initalized_capacity *= CAPACITY_ADD;
       }
       char *newLineChar2 = (char *)realloc(newLineChar, initalized_capacity * sizeof(char));
-
-      if (!newLineChar2)
-      {
-        free(newLineChar);
-        perror("Did not pass the memory allocation.");
-        exit(1);
-      }
       newLineChar = newLineChar2;
     }
     strcpy(newLineChar + lengthOfLine, newBuffArrary);
     lengthOfLine += newBuffArraryLen;
 
-    if (newBuffArraryLen < BUFFER - 1 || newBuffArrary[BUFFER - 2] == '\n')
+    if (newBuffArraryLen < BUFFER - 1 || newBuffArrary[BUFFER - CAPACITY_ADD] == '\n')
     {
       break;
     }

@@ -62,13 +62,7 @@ Map *makeMap(int len)
 {
   // Memory is allocated for the map struct.
   Map *newMap = calloc(1, sizeof(Map));
-  if (!newMap || !(newMap->table = implementNewTable(len)))
-  {
-    // Free memory if allocation is failed
-    free(newMap);
-    return NULL;
-  }
-
+  newMap->table = implementNewTable(len);
   newMap->tlen = len;
 
   // Pointer returned after initializing fields.
@@ -99,10 +93,6 @@ int mapSize(Map *m)
 */
 void mapSet(Map *m, Value *key, Value *val)
 {
-  // Simple check to see if there are null pointers.
-  if (!m || !key || !val)
-    return;
-
   // Hash value is calculated for key.
   unsigned int newHash = key->hash(key);
   int mapIdx = newHash % m->tlen;
@@ -123,8 +113,6 @@ void mapSet(Map *m, Value *key, Value *val)
 
   // If the key is not found, memory is allocated.
   MapPair *keySearch = malloc(sizeof(MapPair));
-  if (!keySearch)
-    return;
 
   // Initialize the map pair with the given value and key.
   key->move(key, &keySearch->key);
@@ -146,10 +134,6 @@ void mapSet(Map *m, Value *key, Value *val)
 */
 Value *mapGet(Map *m, Value *key)
 {
-  // Simple check to see if there are null pointers.
-  if (!m || !key)
-    return NULL;
-
   // Hash value is calculated for key.
   unsigned int newHash = key->hash(key);
   int idx = newHash % m->tlen;
@@ -180,10 +164,6 @@ Value *mapGet(Map *m, Value *key)
 */
 bool mapRemove(Map *m, Value *key)
 {
-  // Simple check to see if there are null pointers.
-  if (!m || !key)
-    return false;
-
   // Hash value is calculated for key.
   unsigned int newHash = key->hash(key);
   int idx = newHash % m->tlen;
@@ -207,9 +187,7 @@ bool mapRemove(Map *m, Value *key)
       m->size--;
       return true;
     }
-    currPairs = &(*currPairs)->next;
   }
-
   return false;
 }
 
@@ -221,10 +199,6 @@ bool mapRemove(Map *m, Value *key)
 */
 void freeMap(Map *m)
 {
-  // Simple check to see if there are null pointers.
-  if (m == NULL)
-    return;
-
   // Go through each part of the hash table.
   for (int idx = 0; idx < m->tlen; idx++)
   {
