@@ -1,1 +1,0 @@
-usage: trader <account-file> <transaction-file>

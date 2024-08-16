@@ -1,3 +1,0 @@
-Larry buy 1 100.0
-Moe sell 1 100.0
-Curly buy 1 100.0

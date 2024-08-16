@@ -1,2 +1,0 @@
-Alice buy 5 11.35
-Alice sell 10 14.08

@@ -1,2 +1,0 @@
-Bob sell 4 17.15
-Alice buy 9 120.20

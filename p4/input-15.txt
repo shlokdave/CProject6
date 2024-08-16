@@ -1,3 +1,0 @@
-list parks
-list county Wake
-quit

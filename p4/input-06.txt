@@ -1,3 +1,0 @@
-list county Orange
-list county Pender
-quit

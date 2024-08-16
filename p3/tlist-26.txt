@@ -1,3 +1,0 @@
-Ron buy 1 100.0
-Hermione sell 1 100.0
-Harry buy 1 100.0
